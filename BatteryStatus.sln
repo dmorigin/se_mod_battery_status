@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.271
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BatteryStatus", "BatteryStatus\BatteryStatus.csproj", "{E9E0AA70-DA4B-4581-937A-70A4186D9206}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E9E0AA70-DA4B-4581-937A-70A4186D9206}.Debug|x64.ActiveCfg = Debug|x64
+		{E9E0AA70-DA4B-4581-937A-70A4186D9206}.Debug|x64.Build.0 = Debug|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {AAAA8AB0-EB8B-45C9-A52E-AAF648F21709}
+	EndGlobalSection
+EndGlobal
