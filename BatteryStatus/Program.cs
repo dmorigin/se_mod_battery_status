@@ -64,31 +64,31 @@ namespace IngameScript
 
 
         //if Self updating System enabled you can choose how many times per second the script will be activated 
-        int SelfUpSys_perSecond = 2;        // 1 = 1 sec, 2 = 2 sec etc.
+        int SelfUpSys_perSecond = 2;        // 1 = 1 sec, 2 = 2 sec etc. 
 
-        //-----   Other Settings    -----
+        //-----   Other Settings    -----	 
 
-        // Shows Title on top of the LCD / Text Panel
-        // "BATTERY STATUS" as title on Top, if disabled it leaves it space black
-        bool BatteryTitle_Enabled = true;       // true = show title, false = no title
+        // Shows Title on top of the LCD / Text Panel 
+        // "BATTERY STATUS" as title on Top, if disabled it leaves it space black 
+        bool BatteryTitle_Enabled = true;       // true = show title, false = no title 
 
-        //there are three lines as border, you can deaktivate each of them of you want, true = on, false = off
-        bool Underline_1_Enabled = true;        // Show Underline below Title
-        bool BatSpaceline_Enabled = true;       // Show Middle line between Battery Amount and Stored Energy
-        bool Underline_2_Enabled = true;        // Show Underline Below Battery Amount and Stored Energy
+        //there are three lines as border, you can deaktivate each of them of you want, true = on, false = off 
+        bool Underline_1_Enabled = true;        // Show Underline below Title 
+        bool BatSpaceline_Enabled = true;       // Show Middle line between Battery Amount and Stored Energy 
+        bool Underline_2_Enabled = true;        // Show Underline Below Battery Amount and Stored Energy 
 
-        // Show Amount of Battery's displayed
-        bool BatteryAmountEnabled = true;       // true = Show Amount, false = off
+        // Show Amount of Battery's displayed 
+        bool BatteryAmountEnabled = true;       // true = Show Amount, false = off 
 
-        // Show total amount of all Stored Energy in Wh, kWh, MWh or GWh, Units depending on amount of Energy
-        bool BatteryAllStoredEnergyEnabled = true;      // true = Show stored Energy, false = off
+        // Show total amount of all Stored Energy in Wh, kWh, MWh or GWh, Units depending on amount of Energy				 
+        bool BatteryAllStoredEnergyEnabled = true;      // true = Show stored Energy, false = off 
 
-        // Show Status of Power Input with an small Flash-Symbol
-        // if true, when no Power input = red, Reactor online = Green, Solar Panel online and no reactor online = Cyan
-        // Power Input below needed supply = Orange
-        bool PowerInput_Enabled = true;         // true = Show Power Input supply, Flash-Symbol changes color for different states, false = off
+        // Show Status of Power Input with an small Flash-Symbol 
+        // if true, when no Power input = red, Reactor online = Green, Solar Panel online and no reactor online = Cyan 
+        // Power Input below needed supply = Orange 
+        bool PowerInput_Enabled = true;         // true = Show Power Input supply, Flash-Symbol changes color for different states, false = off 
 
-        // LCD Brightness
+        // LCD Brightness 
         // 0-255, 0 = dark, 255 = Bright 
         int LCDbright = 255;
         /* 
@@ -205,8 +205,9 @@ namespace IngameScript
                 //Battery Status	######################################## 
 
                 // Create list with all Batterys attached/added 
-                var batterylist = new List<IMyTerminalBlock>();                     //create new empty list 
-                GridTerminalSystem.GetBlocksOfType<IMyBatteryBlock>(batterylist);   //put all Batterys in this list 
+                var batterylist = new List<IMyBatteryBlock>();                      //create new empty list 
+                GridTerminalSystem.GetBlocksOfType<IMyBatteryBlock>(batterylist);   //put all Batterys in this list
+                Echo("Batteries: " + batterylist.Count);
 
                 float battery_X_MaxOutput_KW_All = 0f;      // create empty Val 
                 float battery_X_CurrentOutput_KW_All = 0f;      // create empty Val 
@@ -247,9 +248,6 @@ namespace IngameScript
 
                 for (int i = 0; i < batterylist.Count; i++)
                 {
-                    var batterylist_X_CustomName = batterylist[i].CustomName;                           // Custom name of Battery Block 
-                    IMyBatteryBlock batterylist_X = GridTerminalSystem.GetBlockWithName(batterylist_X_CustomName) as IMyBatteryBlock;
-
                     OnlyNameTag = false;
                     if (OnlyBatteryWithNameTag)
                     {
@@ -394,7 +392,7 @@ namespace IngameScript
                     bool batt_OnlyDischarge = false;
                     bool batt_IsOff = false;
 
-                    if (batterylist_X.Enabled)
+                    if (batterylist[i].Enabled)
                     {
                         batt_IsOff = true;
                         if (batterylist[i].IsFunctional)
@@ -402,9 +400,9 @@ namespace IngameScript
                             if (batterylist[i].IsWorking)
                             {
                                 batt_IsFunctional = true;
-                                if (batterylist_X.IsCharging) { batt_IsCharging = true; }
-                                else if (batterylist_X.OnlyRecharge) { batt_OnlyRecharge = true; }
-                                else if (batterylist_X.OnlyDischarge) { batt_OnlyDischarge = true; }
+                                if (batterylist[i].IsCharging) { batt_IsCharging = true; }
+                                else if (batterylist[i].ChargeMode == ChargeMode.Recharge) { batt_OnlyRecharge = true; }
+                                else if (batterylist[i].ChargeMode == ChargeMode.Discharge) { batt_OnlyDischarge = true; }
                             }
                         }
                     }
@@ -913,102 +911,97 @@ namespace IngameScript
                 if (PowerInput_Enabled)
                 {
                     // Create a new List for all found Reactors 
-                    var allReactors_list = new List<IMyTerminalBlock>();                    //create new empty list 
+                    var allReactors_list = new List<IMyReactor>();                  //create new empty list 
                     GridTerminalSystem.GetBlocksOfType<IMyReactor>(allReactors_list);   //put all Solar Panels in this list 
-
+                    Echo("Reactors: " + allReactors_list.Count);
 
                     for (int i = 0; i < allReactors_list.Count; i++)
                     {
-                        var Reactor_X_CustomName = allReactors_list[i].CustomName;                  // Custom name of Reactor 
-                        IMyReactor reactor_X = GridTerminalSystem.GetBlockWithName(Reactor_X_CustomName) as IMyReactor;
-                        if (reactor_X.Enabled)
+                        if (allReactors_list[i].CurrentOutput > 0)
                         {
-                            if (allReactors_list[i].IsFunctional)
+                            var Reactor_X_Detailed = allReactors_list[i].DetailedInfo;                  // Detailed Info  
+                            var Reactor_X_Split = Reactor_X_Detailed.Split('\n');                       // Split the string li, to get the needed information 
+                                                                                                        // Max Output 
+                            var Reactor_X_MaxOutput = Reactor_X_Split[1].Split(':')[1].Trim();          // Max Output (Ex: 100 kW) 
+                            var Reactor_X_MaxOutputVal = Reactor_X_MaxOutput.Split(' ')[0].Trim();      // Max Output as Value (Ex: 100) 
+                            var Reactor_X_MaxOutputValUnit = Reactor_X_MaxOutput.Split(' ')[1].Trim();  // Max Output as Value Unit (Ex: kW) 
+                            float Reactor_X_MaxOutput_float_X = float.Parse(Reactor_X_MaxOutputVal);    // Max Output Convert to float 
+                                                                                                        // Check W / kW / MW - Convert to kW 
+                            if (Reactor_X_MaxOutputValUnit == "W")
                             {
-                                var Reactor_X_Detailed = allReactors_list[i].DetailedInfo;                  // Detailed Info  
-                                var Reactor_X_Split = Reactor_X_Detailed.Split('\n');                       // Split the string li, to get the needed information 
-                                                                                                            // Max Output 
-                                var Reactor_X_MaxOutput = Reactor_X_Split[1].Split(':')[1].Trim();          // Max Output (Ex: 100 kW) 
-                                var Reactor_X_MaxOutputVal = Reactor_X_MaxOutput.Split(' ')[0].Trim();      // Max Output as Value (Ex: 100) 
-                                var Reactor_X_MaxOutputValUnit = Reactor_X_MaxOutput.Split(' ')[1].Trim();  // Max Output as Value Unit (Ex: kW) 
-                                float Reactor_X_MaxOutput_float_X = float.Parse(Reactor_X_MaxOutputVal);    // Max Output Convert to float 
-                                                                                                            // Check W / kW / MW - Convert to kW 
-                                if (Reactor_X_MaxOutputValUnit == "W")
-                                {
-                                    Reactor_X_MaxOutput_float_X = Reactor_X_MaxOutput_float_X / 1000;           // W to kW  
-                                }
-                                else if (Reactor_X_MaxOutputValUnit == "kW")
-                                {                                                                           // do nothing 
-                                }
-                                else if (Reactor_X_MaxOutputValUnit == "MW") { Reactor_X_MaxOutput_float_X = Reactor_X_MaxOutput_float_X * 1000; }  // MW to kW 
-                                Reactor_X_MaxOutput_KW_All += Reactor_X_MaxOutput_float_X;
-                                // Current Output 
-                                var Reactor_X_CurrentOutput = Reactor_X_Split[2].Split(':')[1].Trim();              // Current Output (Ex: 100 kW) 
-                                var Reactor_X_CurrentOutputVal = Reactor_X_CurrentOutput.Split(' ')[0].Trim();      // Current Output as Value (Ex: 100) 
-                                var Reactor_X_CurrentOutputValUnit = Reactor_X_CurrentOutput.Split(' ')[1].Trim();  // Current Output as Value Unit (Ex: kW) 
-                                float Reactor_X_CurrentOutput_float_X = float.Parse(Reactor_X_CurrentOutputVal);    // Current Output Convert to float 
-                                                                                                                    // Check W / kW / MW - Convert to kW 
-                                if (Reactor_X_CurrentOutputValUnit == "W")
-                                {
-                                    Reactor_X_CurrentOutput_float_X = Reactor_X_CurrentOutput_float_X / 1000;           // W to kW  
-                                }
-                                else if (Reactor_X_CurrentOutputValUnit == "kW")
-                                {                                                                           // do nothing 
-                                }
-                                else if (Reactor_X_CurrentOutputValUnit == "MW") { Reactor_X_CurrentOutput_float_X = Reactor_X_CurrentOutput_float_X * 1000; }  // MW to kW 
-                                Reactor_X_CurrentOutput_KW_All += Reactor_X_CurrentOutput_float_X;
-
-                                PowGenAmount += 1;
+                                Reactor_X_MaxOutput_float_X = Reactor_X_MaxOutput_float_X / 1000;           // W to kW  
                             }
+                            else if (Reactor_X_MaxOutputValUnit == "kW")
+                            {                                                                           // do nothing 
+                            }
+                            else if (Reactor_X_MaxOutputValUnit == "MW") { Reactor_X_MaxOutput_float_X = Reactor_X_MaxOutput_float_X * 1000; }  // MW to kW 
+                            Reactor_X_MaxOutput_KW_All += Reactor_X_MaxOutput_float_X;
+                            // Current Output 
+                            var Reactor_X_CurrentOutput = Reactor_X_Split[2].Split(':')[1].Trim();              // Current Output (Ex: 100 kW) 
+                            var Reactor_X_CurrentOutputVal = Reactor_X_CurrentOutput.Split(' ')[0].Trim();      // Current Output as Value (Ex: 100) 
+                            var Reactor_X_CurrentOutputValUnit = Reactor_X_CurrentOutput.Split(' ')[1].Trim();  // Current Output as Value Unit (Ex: kW) 
+                            float Reactor_X_CurrentOutput_float_X = float.Parse(Reactor_X_CurrentOutputVal);    // Current Output Convert to float 
+                                                                                                                // Check W / kW / MW - Convert to kW 
+                            if (Reactor_X_CurrentOutputValUnit == "W")
+                            {
+                                Reactor_X_CurrentOutput_float_X = Reactor_X_CurrentOutput_float_X / 1000;           // W to kW  
+                            }
+                            else if (Reactor_X_CurrentOutputValUnit == "kW")
+                            {                                                                           // do nothing 
+                            }
+                            else if (Reactor_X_CurrentOutputValUnit == "MW") { Reactor_X_CurrentOutput_float_X = Reactor_X_CurrentOutput_float_X * 1000; }  // MW to kW 
+                            Reactor_X_CurrentOutput_KW_All += Reactor_X_CurrentOutput_float_X;
+
+                            PowGenAmount += 1;
                         }//End if Enabled & Functional 
                     }
                     // Create a new List for all found Solar Panels 
-                    var allSolarPanels_list = new List<IMyTerminalBlock>();                 //create new empty list 
+                    var allSolarPanels_list = new List<IMySolarPanel>();                    //create new empty list 
                     GridTerminalSystem.GetBlocksOfType<IMySolarPanel>(allSolarPanels_list); //put all Solar Panels in this list 
+                    Echo("Solar Panels: " + allSolarPanels_list.Count);
 
                     float Solar_X_MaxOutput_float_X = 0f;
                     float Solar_X_CurrentOutput_float_X = 0f;
 
                     for (int i = 0; i < allSolarPanels_list.Count; i++)
                     {
-                        //var Solar_X_CustomName = allSolarPanels_list[i].CustomName;					// Custom name of Reactor 
-                        //IMySolarPanel Solar_X = GridTerminalSystem.GetBlockWithName(Solar_X_CustomName) as IMySolarPanel; 
-                        //if (allSolarPanels_list[i].IsFunctional) { 
-                        var Solar_X_Detailed = allSolarPanels_list[i].DetailedInfo;                 // Detailed Info  
-                        var Solar_X_Split = Solar_X_Detailed.Split('\n');                       // Split the string li, to get the needed information 
-                                                                                                // Max Output 
-                        var Solar_X_MaxOutput = Solar_X_Split[1].Split(':')[1].Trim();          // Max Output (Ex: 100 kW) 
-                        var Solar_X_MaxOutputVal = Solar_X_MaxOutput.Split(' ')[0].Trim();      // Max Output as Value (Ex: 100) 
-                        var Solar_X_MaxOutputValUnit = Solar_X_MaxOutput.Split(' ')[1].Trim();  // Max Output as Value Unit (Ex: kW) 
-                        string myDataToString = Solar_X_MaxOutputVal.ToString();
-                        Solar_X_MaxOutput_float_X = float.Parse(myDataToString);    // Max Output Convert to float 
-                                                                                    // Check W / kW / MW - Convert to kW 
-                        if (Solar_X_MaxOutputValUnit == "W")
+                        if (allSolarPanels_list[i].CurrentOutput > 0)
                         {
-                            Solar_X_MaxOutput_float_X = Solar_X_MaxOutput_float_X / 1000;       // W to kW  
-                        }
-                        else if (Solar_X_MaxOutputValUnit == "kW")
-                        {                                                                           // do nothing 
-                        }
-                        else if (Solar_X_MaxOutputValUnit == "MW") { Solar_X_MaxOutput_float_X = Solar_X_MaxOutput_float_X * 1000; }    // MW to kW 
-                        Solar_X_MaxOutput_KW_All += Solar_X_MaxOutput_float_X;
-                        // Current Output 
-                        var Solar_X_CurrentOutput = Solar_X_Split[2].Split(':')[1].Trim();              // Current Output (Ex: 100 kW) 
-                        var Solar_X_CurrentOutputVal = Solar_X_CurrentOutput.Split(' ')[0].Trim();      // Current Output as Value (Ex: 100) 
-                        var Solar_X_CurrentOutputValUnit = Solar_X_CurrentOutput.Split(' ')[1].Trim();  // Current Output as Value Unit (Ex: kW) 
-                        string myDataToString2 = Solar_X_CurrentOutputVal.ToString();
-                        Solar_X_CurrentOutput_float_X = float.Parse(myDataToString2);                   // Current Output Convert to float 
-                                                                                                        // Check W / kW / MW - Convert to kW 
-                        if (Solar_X_CurrentOutputValUnit == "W")
-                        {
-                            Solar_X_CurrentOutput_float_X = Solar_X_CurrentOutput_float_X / 1000;           // W to kW  
-                        }
-                        else if (Solar_X_CurrentOutputValUnit == "kW")
-                        {                                                                           // do nothing 
-                        }
-                        else if (Solar_X_CurrentOutputValUnit == "MW") { Solar_X_CurrentOutput_float_X = Solar_X_CurrentOutput_float_X * 1000; }    // MW to kW 
-                        Solar_X_CurrentOutput_KW_All += Solar_X_CurrentOutput_float_X;
-                        //}//End if Functional 
+                            var Solar_X_Detailed = allSolarPanels_list[i].DetailedInfo;                 // Detailed Info  
+                            var Solar_X_Split = Solar_X_Detailed.Split('\n');                       // Split the string li, to get the needed information 
+                                                                                                    // Max Output 
+                            var Solar_X_MaxOutput = Solar_X_Split[1].Split(':')[1].Trim();          // Max Output (Ex: 100 kW) 
+                            var Solar_X_MaxOutputVal = Solar_X_MaxOutput.Split(' ')[0].Trim();      // Max Output as Value (Ex: 100) 
+                            var Solar_X_MaxOutputValUnit = Solar_X_MaxOutput.Split(' ')[1].Trim();  // Max Output as Value Unit (Ex: kW) 
+                            string myDataToString = Solar_X_MaxOutputVal.ToString();
+                            Solar_X_MaxOutput_float_X = float.Parse(myDataToString);    // Max Output Convert to float 
+                                                                                        // Check W / kW / MW - Convert to kW 
+                            if (Solar_X_MaxOutputValUnit == "W")
+                            {
+                                Solar_X_MaxOutput_float_X = Solar_X_MaxOutput_float_X / 1000;       // W to kW  
+                            }
+                            else if (Solar_X_MaxOutputValUnit == "kW")
+                            {                                                                           // do nothing 
+                            }
+                            else if (Solar_X_MaxOutputValUnit == "MW") { Solar_X_MaxOutput_float_X = Solar_X_MaxOutput_float_X * 1000; }    // MW to kW 
+                            Solar_X_MaxOutput_KW_All += Solar_X_MaxOutput_float_X;
+                            // Current Output 
+                            var Solar_X_CurrentOutput = Solar_X_Split[2].Split(':')[1].Trim();              // Current Output (Ex: 100 kW) 
+                            var Solar_X_CurrentOutputVal = Solar_X_CurrentOutput.Split(' ')[0].Trim();      // Current Output as Value (Ex: 100) 
+                            var Solar_X_CurrentOutputValUnit = Solar_X_CurrentOutput.Split(' ')[1].Trim();  // Current Output as Value Unit (Ex: kW) 
+                            string myDataToString2 = Solar_X_CurrentOutputVal.ToString();
+                            Solar_X_CurrentOutput_float_X = float.Parse(myDataToString2);                   // Current Output Convert to float 
+                                                                                                            // Check W / kW / MW - Convert to kW 
+                            if (Solar_X_CurrentOutputValUnit == "W")
+                            {
+                                Solar_X_CurrentOutput_float_X = Solar_X_CurrentOutput_float_X / 1000;           // W to kW  
+                            }
+                            else if (Solar_X_CurrentOutputValUnit == "kW")
+                            {                                                                           // do nothing 
+                            }
+                            else if (Solar_X_CurrentOutputValUnit == "MW") { Solar_X_CurrentOutput_float_X = Solar_X_CurrentOutput_float_X * 1000; }    // MW to kW 
+                            Solar_X_CurrentOutput_KW_All += Solar_X_CurrentOutput_float_X;
+                        }//End if Functional 
                     }/**/
                      //Fuse Reactor + Solar energy together in kW 
                     GenSol_MaxOutput += Reactor_X_MaxOutput_KW_All;
@@ -1160,11 +1153,8 @@ namespace IngameScript
 
                 int numVal = Convert.ToInt32(batX_CurrStored_KW_All);
 
-
                 //	string myDataToString = batX_CurrStored_KW_All.ToString(); 
                 //	int numVal = Int32.Parse(myDataToString); 
-
-
 
                 for (int i = 0; i < CounterNumConvert; i++)
                 {   // Here set your Number to split 
@@ -1582,6 +1572,6 @@ namespace IngameScript
                     BatteryStatus_Lcd_X.WritePublicText("" + str_AllBoundlis_001_To_178, false);
                 }
             }
-        }// End of Main script
+        } // End of Main script
     }
 }
