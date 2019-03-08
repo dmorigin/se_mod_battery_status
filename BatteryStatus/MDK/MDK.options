@@ -1,10 +1,10 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- DO NOT DELETE THIS FILE.-->
 <!-- MDK is using this file to identify this project as an MDK project. -->
 <mdk version="1.1.30">
   <gamebinpath enabled="no">e:\steam\SteamApps\common\SpaceEngineers\Bin64</gamebinpath>
   <installpath>c:\users\dragonmaster\appdata\local\microsoft\visualstudio\15.0_88c327cc\extensions\t1yd3nbp.gam</installpath>
-  <outputpath>C:\Users\DragonMaster\AppData\Roaming\SpaceEngineers\IngameScripts\local</outputpath>
+  <outputpath>D:\Development\Games\Space Engineers Mods\BatteryStatus</outputpath>
   <trimtypes>no</trimtypes>
   <minify>no</minify>
   <ignore>
