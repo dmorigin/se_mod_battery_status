@@ -198,9 +198,9 @@ namespace IngameScript
                 //Battery Status	########################################
 
                 // Create list with all Batterys attached/added
-                var batterylist = new List<IMyBatteryBlock>(); //create new empty list
-                GridTerminalSystem.GetBlocksOfType<IMyBatteryBlock>(batterylist); //put all Batterys in this list
-                Echo("Batteries: " + batterylist.Count);
+                var batteryList = new List<IMyBatteryBlock>(); //create new empty list
+                GridTerminalSystem.GetBlocksOfType<IMyBatteryBlock>(batteryList); //put all Batterys in this list
+                Echo("Batteries: " + batteryList.Count);
 
                 float battery_X_MaxOutput_KW_All = 0f; // create empty Val
                 float battery_X_CurrentOutput_KW_All = 0f; // create empty Val
@@ -209,7 +209,7 @@ namespace IngameScript
                 float batt_X_MaxStored_KW_All = 0f; // create empty Val
                 float batX_CurrStored_KW_All = 0f; // create empty Val
                 int battAmountActualloop = 0;
-                int battAmountCount = batterylist.Count;
+                int battAmountCount = batteryList.Count;
                 float batt_X_CurrentStored_float_X = 0f;
                 bool OnlySmallSigns = false;
 
@@ -239,105 +239,23 @@ namespace IngameScript
                     li165 = pz; li166 = pz; li167 = pz; li168 = pz; li169 = pz; li170 = pz; li171 = pz; li172 = pz; li173 = pz; li174 = pz; li175 = pz; li176 = pz; li177 = pz;
                 }
 
-                for (int i = 0; i < batterylist.Count; i++)
+                //for (int i = 0; i < batteryList.Count; i++)
+                foreach (var battery in batteryList)
                 {
                     OnlyNameTag = false;
                     if (OnlyBatteryWithNameTag)
                     {
-                        if (batterylist[i].CustomName.Contains(BatteryNameTag)) { OnlyNameTag = true; }
+                        if (battery.CustomName.Contains(BatteryNameTag)) { OnlyNameTag = true; }
                     }
-                    var batterylist_Detailed = batterylist[i].DetailedInfo; // Detailed Info
-                    var batterylist_X_Split = batterylist_Detailed.Split('\n'); // Split the string li, to get the needed information
-                    var batterylist_X_Typ = batterylist_X_Split[0].Split(':')[1].Trim();
-                    // Max Output			##########################
-                    var batterylist_X_MaxOutput = batterylist_X_Split[1].Split(':')[1].Trim(); // Max Output (Ex: 100 kW)
-                    var batterylist_X_MaxOutputVal = batterylist_X_MaxOutput.Split(' ')[0].Trim(); // Max Output as Value (Ex: 100)
-                    var batterylist_X_MaxOutputValUnit = batterylist_X_MaxOutput.Split(' ')[1].Trim(); // Max Output as Value Unit (Ex: kW)
-                    float batterylist_X_MaxOutput_float_X = float.Parse(batterylist_X_MaxOutputVal); // Max Output Convert to float
-                    // Check W / kW / MW - Convert to kW
-                    if (batterylist_X_MaxOutputValUnit == "W")
-                    {
-                        batterylist_X_MaxOutput_float_X = batterylist_X_MaxOutput_float_X / 1000; // W to kW
-                    }
-                    else if (batterylist_X_MaxOutputValUnit == "kW")
-                    { // do nothing
-                    }
-                    else if (batterylist_X_MaxOutputValUnit == "MW") { batterylist_X_MaxOutput_float_X = batterylist_X_MaxOutput_float_X * 1000; }// MW to kW
-                                                                                                                                                  // Max Input Needed
-                    var battery_X_MaxInput = batterylist_X_Split[2].Split(':')[1].Trim(); // Max Input (Ex: 100 kW)
-                    var battery_X_MaxInputVal = battery_X_MaxInput.Split(' ')[0].Trim(); // Max Input as Value (Ex: 100)
-                    var battery_X_MaxInputValUnit = battery_X_MaxInput.Split(' ')[1].Trim(); // Max Input as Value Unit (Ex: kW)
-                    float battery_X_MaxInput_float_X = float.Parse(battery_X_MaxInputVal); // Max Input Convert to float
-                                                                                                    // Check W / kW / MW - Convert to kW
-                    if (battery_X_MaxInputValUnit == "W")
-                    {
-                        battery_X_MaxInput_float_X = battery_X_MaxInput_float_X / 1000; // W to kW
-                    }
-                    else if (battery_X_MaxInputValUnit == "kW")
-                    {                                                                   // do nothing
-                    }
-                    else if (battery_X_MaxInputValUnit == "MW") { battery_X_MaxInput_float_X = battery_X_MaxInput_float_X * 1000; } // MW to kW
-                                                                                                                                    // Max Stored
-                    var batt_X_MaxStored = batterylist_X_Split[3].Split(':')[1].Trim(); // Max Stored (Ex: 100 kW)
-                    var batt_X_MaxStoredValUnit = batt_X_MaxStored.Split(' ')[1].Trim(); // Max Stored as Value Unit (Ex: kW)
-                    var batt_X_MaxStoredVal = batt_X_MaxStored.Split(' ')[0].Trim(); // Max Stored as Value (Ex: 100)
-                    float batt_X_MaxStored_float_X = float.Parse(batt_X_MaxStoredVal); // Max Stored Convert to float
-                    // Check W / kW / MW - Convert to kW
-                    if (batt_X_MaxStoredValUnit == "Wh")
-                    {
-                        batt_X_MaxStored_float_X = batt_X_MaxStored_float_X / 1000; // W to kW
-                    }
-                    else if (batt_X_MaxStoredValUnit == "kWh") { // do nothing
-                    }
-                    else if (batt_X_MaxStoredValUnit == "MWh") { batt_X_MaxStored_float_X = batt_X_MaxStored_float_X * 1000; }  // MW to kW
-                    // Current Input needed
-                    var batt_X_CurrInput = "";
-                    if (batterylist_X_Typ == "Batería")
-                    {
-                        batt_X_CurrInput = batterylist_X_Split[4].Split('l')[1].Trim();
-                    }
-                    else
-                    {
-                        batt_X_CurrInput = batterylist_X_Split[4].Split(':')[1].Trim(); // Current Input (Ex: 100 kW)
-                    }
-                    var batt_X_CurrInputVal = batt_X_CurrInput.Split(' ')[0].Trim(); // Current Input as Value (Ex: 100)
-                    var batt_X_CurrInputValUnit = batt_X_CurrInput.Split(' ')[1].Trim(); // Current Input as Value Unit (Ex: kW)
-                    float batt_X_CurrInput_float_X = float.Parse(batt_X_CurrInputVal); // Current Input Convert to float
-                                                                                            // Check W / kW / MW - Convert to kW
-                    if (batt_X_CurrInputValUnit == "W")
-                    {
-                        batt_X_CurrInput_float_X = batt_X_CurrInput_float_X / 1000; // W to kW
-                    }
-                    else if (batt_X_CurrInputValUnit == "kW")
-                    {                                                                           // do nothing
-                    }
-                    else if (batt_X_CurrInputValUnit == "MW") { batt_X_CurrInput_float_X = batt_X_CurrInput_float_X * 1000; }   // MW to kW
-                                                                                                                                // Current Output			##########################
-                    var batListX_CurrOutput = batterylist_X_Split[5].Split(':')[1].Trim(); // Current Output (Ex: 100 kW)
-                    var batListX_CurrOutputVal = batListX_CurrOutput.Split(' ')[0].Trim(); // Current Output as Value (Ex: 100)
-                    var batListX_CurrOutputValUnit = batListX_CurrOutput.Split(' ')[1].Trim(); // Current Output as Value Unit (Ex: kW)
-                    float batListX_CurrOutput_float_X = float.Parse(batListX_CurrOutputVal); // Current Output Convert to float
-                                                                                                // Check W / kW / MW - Convert to kW
-                    if (batListX_CurrOutputValUnit == "W")
-                    {
-                        batListX_CurrOutput_float_X = batListX_CurrOutput_float_X / 1000; // W to kW
-                    }
-                    else if (batListX_CurrOutputValUnit == "kW") { // do nothing
-                    }
-                    else if (batListX_CurrOutputValUnit == "MW") { batListX_CurrOutput_float_X = batListX_CurrOutput_float_X * 1000; }  // MW to kW
-                                                                                                                                        // Current Stored		##########################
-                    var batX_CurrStored = batterylist_X_Split[6].Split(':')[1].Trim(); // Current Stored (Ex: 100 kW)
-                    var batX_CurrStoredVal = batX_CurrStored.Split(' ')[0].Trim(); // Current Stored as Value (Ex: 100)
-                    var batX_CurrStoredValUnit = batX_CurrStored.Split(' ')[1].Trim(); // Current Stored as Value Unit (Ex: kW)
-                    batt_X_CurrentStored_float_X = float.Parse(batX_CurrStoredVal); // Current Stored Convert to float
-                                                                                        // Check W / kW / MW - Convert to kW
-                    if (batX_CurrStoredValUnit == "Wh")
-                    {
-                        batt_X_CurrentStored_float_X = batt_X_CurrentStored_float_X / 1000; // W to kW
-                    }
-                    else if (batX_CurrStoredValUnit == "kWh") { // do nothing
-                    }
-                    else if (batX_CurrStoredValUnit == "MWh") { batt_X_CurrentStored_float_X = batt_X_CurrentStored_float_X * 1000; }   // MW to kW
+
+                    // replacement for the string operations
+                    float batterylist_X_MaxOutput_float_X = battery.MaxOutput * 1000f;
+                    float battery_X_MaxInput_float_X = battery.MaxInput * 1000f;
+                    float batt_X_MaxStored_float_X = battery.MaxStoredPower * 1000f;
+                    float batt_X_CurrInput_float_X = battery.CurrentInput * 1000f;
+                    float batListX_CurrOutput_float_X = battery.CurrentOutput * 1000f;
+                    batt_X_CurrentStored_float_X = battery.CurrentStoredPower * 1000f;
+
                     battery_X_MaxOutput_KW_All += batterylist_X_MaxOutput_float_X;
                     battery_X_MaxInput_KW_All += battery_X_MaxInput_float_X;
                     batt_X_MaxStored_KW_All += batt_X_MaxStored_float_X;
@@ -355,6 +273,7 @@ namespace IngameScript
                         batX_CurrStored_KW_All += batt_X_CurrentStored_float_X;
                     }
                     battery_X_CurrentOutput_KW_All += batListX_CurrOutput_float_X;
+
                     //Get Battery ST in percent
                     float BatLevel = batt_X_MaxStored_float_X / 6; //Battery Level 1 percent
                     float BatLevel_1 = BatLevel; // 1 Bar
@@ -373,30 +292,27 @@ namespace IngameScript
                     string BBST20 = Py; string BBST21 = Py; string BBST22 = Py; string BBST23 = Py; string BBST24 = Py; string BBST25 = Py; string BBST26 = Py; string BBST27 = Py; string BBST28 = Py; string BBST29 = Py;
                     string BBST30 = Py; string BBST31 = Py; string BBST32 = Py; string BBST33 = Py; string BBST34 = Py; string BBST35 = Py; string BBST36 = Py; string BBST37 = Py; string BBST38 = Py; string BBST39 = Py;
 
-
-
-
                     bool batt_IsFunctional = false;
                     bool batt_IsCharging = false;
                     bool batt_OnlyRecharge = false;
                     bool batt_OnlyDischarge = false;
                     bool batt_IsOff = false;
 
-                    if (batterylist[i].Enabled)
+                    if (battery.Enabled)
                     {
                         batt_IsOff = true;
-                        if (batterylist[i].IsFunctional)
+                        if (battery.IsFunctional)
                         {
-                            if (batterylist[i].IsWorking)
+                            if (battery.IsWorking)
                             {
                                 batt_IsFunctional = true;
-                                if (batterylist[i].IsCharging) { batt_IsCharging = true; }
-                                else if (batterylist[i].ChargeMode == ChargeMode.Recharge) { batt_OnlyRecharge = true; }
-                                else if (batterylist[i].ChargeMode == ChargeMode.Discharge) { batt_OnlyDischarge = true; }
+                                if (battery.IsCharging) { batt_IsCharging = true; }
+                                else if (battery.ChargeMode == ChargeMode.Recharge) { batt_OnlyRecharge = true; }
+                                else if (battery.ChargeMode == ChargeMode.Discharge) { batt_OnlyDischarge = true; }
                             }
                         }
                     }
-                    else if (batterylist[i].IsFunctional) { batt_IsFunctional = true; }
+                    else if (battery.IsFunctional) { batt_IsFunctional = true; }
 
                     bool Level_on = false;
                     //if batt Charging
@@ -901,16 +817,19 @@ namespace IngameScript
                     GridTerminalSystem.GetBlocksOfType<IMyPowerProducer>(power_producer);
                     foreach (var pp in power_producer)
                     {
-                        var battery = pp as IMyBatteryBlock;
-                        if (battery == null)
+                        if (pp.Enabled && pp.IsFunctional)
                         {
-                            GenSol_CurrentOutput += pp.CurrentOutput;
+                            var isBattery = pp as IMyBatteryBlock;
+                            if (isBattery == null)
+                            {
+                                GenSol_CurrentOutput += pp.CurrentOutput;
 
-                            var solar = pp as IMySolarPanel;
-                            if (solar != null)
-                                Solar_CurrentPower_MW += pp.CurrentOutput;
-                            else
-                                PowGenAmount += 1; // Power Generator Counter (Excluding Solar Panels)
+                                var isSolar = pp as IMySolarPanel;
+                                if (isSolar != null)
+                                    Solar_CurrentPower_MW += pp.CurrentOutput;
+                                else
+                                    PowGenAmount += 1; // Power Generator Counter (Excluding Solar Panels)
+                            }
                         }
                     }
 
