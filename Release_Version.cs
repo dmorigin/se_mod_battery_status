@@ -12,11 +12,12 @@
 This script shows Battery level state on standart LCDs or wide LCDs, as digital Symbols
 Just edit your options, and it you will able to overwatch up to 100 Battery's very easy.*/
 
-//-----   Generals    -----
+
+//-----   Battery Settings    -----
 
 // LCD / Text Panel to show status
 // All LCD with a specific NameTag included in their name, will be show the information. You can edit the NameTag here.
-string LCD_NameTag = "[Battery Status LCD]"; //example: my LCD 31 [Battery Status LCD]
+string LCDNameTag = "[Battery Status LCD]"; //example: my LCD 31 [Battery Status LCD]
 
 // NameTags Specific Blocks
 // on default this script search for all Battery's attached, and show there Status, but somethimes you want be able to
@@ -27,28 +28,33 @@ bool OnlyBatteryWithNameTag = false; //false	= show all found Battery's attached
 //	you can change the Nametag here.
 string BatteryNameTag = "[Battery-Status]"; // NameTag to show only specific Battery's, example: my Battery 15 [Battery-Status]
 
-//-----   Display Settings    -----
+//-----   LCD Settings    -----
 
 // Wide LCD or LCD
 // on default it shows a total amount of max. 50 Battery's. There's a option to show a total amount of 100 Battery's, but this only works for wide LCDs,
 // on 1x1 LCD will be then shown just the half information! if you use Wide LCDs, then set WideLCD to true.
 bool WideLCD = false; // true = 50 Battery's, false = Show on wide LCD's up to 100 Battery's
 
-// this script change size of the Symbols depending of the amount.
-// it shows Large Symbols for an total amount of 1-10 Battery's on 1x1 LCDs, and a total amount of 1-20 Battery's on wide LCDs, all amount above will be shown
-// in small Symbols, to show always small Symbols set it to true
-bool OnlySmallSigns_Enabled = false; // true = always small symbols, false = depending on amount
+// LCD Brightness
+// 0-255, 0 = dark, 255 = Bright
+int LCDBrightness = 255;
+
+//-----   System Settings    -----
 
 // Self updating System
 // thanks to SpaceEngeneers Update 1.185.1, we are able to use a new system, no need for timer,
 // false = you need an activation
 bool SelfUpdatingSys_Enabled = true; // false = Off, true = after compile script Selfupdating starts
 
-
 //if Self updating System enabled you can choose how many times per second the script will be activated
 int SelfUpSys_perSecond = 2; // 1 = 1 sec, 2 = 2 sec etc.
 
-//-----   Other Settings    -----
+//-----   Display Settings    -----
+
+// this script change size of the Symbols depending of the amount.
+// it shows Large Symbols for an total amount of 1-10 Battery's on 1x1 LCDs, and a total amount of 1-20 Battery's on wide LCDs, all amount above will be shown
+// in small Symbols, to show always small Symbols set it to true
+bool OnlySmallSigns_Enabled = false; // true = always small symbols, false = depending on amount
 
 // Shows Title on top of the LCD / Text Panel
 // "BATTERY STATUS" as title on Top, if disabled it leaves it space black
@@ -70,23 +76,79 @@ bool BatteryAllStoredEnergyEnabled = true; // true = Show stored Energy, false =
 // Power Input below needed supply = Orange
 bool PowerInput_Enabled = true; // true = Show Power Input supply, Flash-Symbol changes color for different states, false = off
 
-// LCD Brightness
-// 0-255, 0 = dark, 255 = Bright
-int LCDbright = 255;
-/*
-# 	Kown Issues:
-# 	after the small Update from 20.11.17 there is a Bug...
-# 	-	if you placeing or deleting a SolarPanel, it stops the script, recompile and run it again
-#
-# 	General Thanks to the Community, to all that share their knowledge, that helped me a lot to make this
-# 	scripts working. Thanks for that.
-*/
 
+int SelfUpSysCounttimes = 5;
+int SelfUpSysCounter = 0;
+
+enum PowerMetricUnit
+{
+Wh,
+kWh,
+MWh,
+GWh
+};
 
 //Dont touch the script below, to prevent errors
 //################################################################################
+private bool GetConfigBool(MyIni parser, string section, string key, bool defaultValue = false)
+{
+if (parser.ContainsKey(section, key))
+return parser.Get(section, key).ToBoolean();
+
+return defaultValue;
+}
+
+private string GetConfigString(MyIni parser, string section, string key, string defaultValue = "")
+{
+if (parser.ContainsKey(section, key))
+return parser.Get(section, key).ToString();
+
+return defaultValue;
+}
+
+private int GetConfigInteger(MyIni parser, string section, string key, int defaultValue = 0)
+{
+if (parser.ContainsKey(section, key))
+return parser.Get(section, key).ToInt32();
+
+return defaultValue;
+}
+
+private void ReadConfiguration()
+{
+MyIni parser = new MyIni();
+MyIniParseResult result;
+if (parser.TryParse(Me.CustomData, out result))
+{
+// battery settings
+OnlyBatteryWithNameTag = GetConfigBool(parser, "battery", "OnlyWithNameTag", false);
+BatteryNameTag = GetConfigString(parser, "battery", "NameTag", "[Battery-Status]");
+
+// lcd settings
+LCDNameTag = GetConfigString(parser, "lcd", "NameTag", "[Battery Status LCD]");
+WideLCD = GetConfigBool(parser, "lcd", "Widescreen", false);
+LCDBrightness = GetConfigInteger(parser, "lcd", "Brightness", 255);
+
+// system settings
+SelfUpdatingSys_Enabled = GetConfigBool(parser, "system", "UpdatingEnabled", true);
+SelfUpSys_perSecond = GetConfigInteger(parser, "system", "UpdateInterval", 2);
+
+// display settings
+OnlySmallSigns_Enabled = GetConfigBool(parser, "display", "OnlySmallSigns", false);
+BatteryTitle_Enabled = GetConfigBool(parser, "display", "ShowBatteryTitle", true);
+Underline_1_Enabled = GetConfigBool(parser, "display", "ShowUnderlineBelowTitle", true);
+Underline_2_Enabled = GetConfigBool(parser, "display", "ShowUnderlineBelowStatus", true);
+BatSpaceline_Enabled = GetConfigBool(parser, "display", "ShowSeperatorInStatus", true);
+BatteryAmountEnabled = GetConfigBool(parser, "display", "ShowBatteryAmmount", true);
+BatteryAllStoredEnergyEnabled = GetConfigBool(parser, "display", "ShowTotalStoredPower", true);
+}
+}
+
 public Program()
 {
+// read configuration
+ReadConfiguration();
+
 if (SelfUpdatingSys_Enabled)
 {
 Runtime.UpdateFrequency = UpdateFrequency.Update10;
@@ -98,12 +160,14 @@ public void Save()
 // empty
 }
 
-int SelfUpSysCounttimes = 5;
-int SelfUpSysCounter = 0;
-
 // Main Script Start
 public void Main(string argument, UpdateType updateSource)
 {
+if (argument.Contains("readConfig"))
+{
+ReadConfiguration();
+return;
+}
 
 bool Run_ThisScript = false;
 if (SelfUpdatingSys_Enabled)
@@ -125,12 +189,9 @@ Run_ThisScript = true;
 
 if (Run_ThisScript)
 {
+Echo("\nBattery Status script:\nby Lightwolf\nModified by DMOrigin\n\nSelf Updating every " + SelfUpSys_perSecond + " Seconds\n");
 
-string echotext = "\nBattery Status script:\nby Lightwolf\n\nSelf Updating every " + SelfUpSys_perSecond + " Seconds\n";
-
-Echo(echotext);
-
-string batteryStoredUnit = "kWh";
+PowerMetricUnit BatteryStoredUnit = PowerMetricUnit.kWh;
 bool OnlyNameTag = false;
 
 //Pixel Tempelates
@@ -177,19 +238,14 @@ string li170 = ""; string li171 = ""; string li172 = ""; string li173 = ""; stri
 //Battery Status	########################################
 
 // Create list with all Batterys attached/added
-var batteryList = new List<IMyBatteryBlock>(); //create new empty list
-GridTerminalSystem.GetBlocksOfType<IMyBatteryBlock>(batteryList); //put all Batterys in this list
-Echo("Batteries: " + batteryList.Count);
+var BatteryList = new List<IMyBatteryBlock>(); //create new empty list
+GridTerminalSystem.GetBlocksOfType<IMyBatteryBlock>(BatteryList); //put all Batterys in this list
+Echo("Batteries: " + BatteryList.Count);
 
-float battery_X_MaxOutput_KW_All = 0f; // create empty Val
-float battery_X_CurrentOutput_KW_All = 0f; // create empty Val
-float battery_X_MaxInput_KW_All = 0f; // create empty Val
-float batt_X_CurrInput_KW_All = 0f; // create empty Val
-float batt_X_MaxStored_KW_All = 0f; // create empty Val
-float batX_CurrStored_KW_All = 0f; // create empty Val
-int battAmountActualloop = 0;
-int battAmountCount = batteryList.Count;
-float batt_X_CurrentStored_float_X = 0f;
+float BatteryCurrentInputTotal = 0f; // Value in KW
+float BatteryCurrentStoredTotal = 0f; // value in KW
+int BatteryLoopCounter = 0;
+int BatteryAmountCount = BatteryList.Count;
 bool OnlySmallSigns = false;
 
 int WideMaxValue = 10;
@@ -201,7 +257,7 @@ WideMinValue = 21;
 }
 
 if (OnlySmallSigns_Enabled) { OnlySmallSigns = true; }
-else if (battAmountCount > WideMaxValue) { OnlySmallSigns = true; }
+else if (BatteryAmountCount > WideMaxValue) { OnlySmallSigns = true; }
 
 string pz = P2;
 if (OnlySmallSigns)
@@ -218,49 +274,41 @@ li151 = pz; li152 = pz; li153 = pz; li154 = pz; li155 = pz; li156 = pz; li157 = 
 li165 = pz; li166 = pz; li167 = pz; li168 = pz; li169 = pz; li170 = pz; li171 = pz; li172 = pz; li173 = pz; li174 = pz; li175 = pz; li176 = pz; li177 = pz;
 }
 
-//for (int i = 0; i < batteryList.Count; i++)
-foreach (var battery in batteryList)
+foreach (var Battery in BatteryList)
 {
 OnlyNameTag = false;
 if (OnlyBatteryWithNameTag)
 {
-if (battery.CustomName.Contains(BatteryNameTag)) { OnlyNameTag = true; }
+if (Battery.CustomName.Contains(BatteryNameTag)) { OnlyNameTag = true; }
 }
 
 // replacement for the string operations
-float batterylist_X_MaxOutput_float_X = battery.MaxOutput * 1000f;
-float battery_X_MaxInput_float_X = battery.MaxInput * 1000f;
-float batt_X_MaxStored_float_X = battery.MaxStoredPower * 1000f;
-float batt_X_CurrInput_float_X = battery.CurrentInput * 1000f;
-float batListX_CurrOutput_float_X = battery.CurrentOutput * 1000f;
-batt_X_CurrentStored_float_X = battery.CurrentStoredPower * 1000f;
+float BatteryCurrentInput = Battery.CurrentInput * 1000f;
+float BatteryCurrentStored = Battery.CurrentStoredPower * 1000f;
 
-battery_X_MaxOutput_KW_All += batterylist_X_MaxOutput_float_X;
-battery_X_MaxInput_KW_All += battery_X_MaxInput_float_X;
-batt_X_MaxStored_KW_All += batt_X_MaxStored_float_X;
 if (OnlyBatteryWithNameTag)
 {
 if (OnlyNameTag)
 {
-batt_X_CurrInput_KW_All += batt_X_CurrInput_float_X;
-batX_CurrStored_KW_All += batt_X_CurrentStored_float_X;
+BatteryCurrentInputTotal += BatteryCurrentInput;
+BatteryCurrentStoredTotal += BatteryCurrentStored;
 }
 }
 else
 {
-batt_X_CurrInput_KW_All += batt_X_CurrInput_float_X;
-batX_CurrStored_KW_All += batt_X_CurrentStored_float_X;
+BatteryCurrentInputTotal += BatteryCurrentInput;
+BatteryCurrentStoredTotal += BatteryCurrentStored;
 }
-battery_X_CurrentOutput_KW_All += batListX_CurrOutput_float_X;
 
 //Get Battery ST in percent
-float BatLevel = batt_X_MaxStored_float_X / 6; //Battery Level 1 percent
+float BatLevel = (Battery.MaxStoredPower * 1000f) / 6; //Battery Level 1 percent
 float BatLevel_1 = BatLevel; // 1 Bar
 float BatLevel_2 = BatLevel * 2; // 2 Bar
 float BatLevel_3 = BatLevel * 3; // 3 Bar
 float BatLevel_4 = BatLevel * 4; // 4 Bar
 float BatLevel_5 = BatLevel * 5; // 5 Bar
 float BatLevel_6 = BatLevel * 6; // 6 Bar
+
 //BatteST Val empty
 string Py = P17;
 string BB_Gr = ""; string BB_Cyan = ""; string BB_Ye = ""; string BB_Or = ""; string BB_Re = "";
@@ -271,33 +319,33 @@ string BBST10 = Py; string BBST11 = Py; string BBST12 = Py; string BBST13 = Py; 
 string BBST20 = Py; string BBST21 = Py; string BBST22 = Py; string BBST23 = Py; string BBST24 = Py; string BBST25 = Py; string BBST26 = Py; string BBST27 = Py; string BBST28 = Py; string BBST29 = Py;
 string BBST30 = Py; string BBST31 = Py; string BBST32 = Py; string BBST33 = Py; string BBST34 = Py; string BBST35 = Py; string BBST36 = Py; string BBST37 = Py; string BBST38 = Py; string BBST39 = Py;
 
-bool batt_IsFunctional = false;
-bool batt_IsCharging = false;
-bool batt_OnlyRecharge = false;
-bool batt_OnlyDischarge = false;
-bool batt_IsOff = false;
+bool BatteryIsFunctional = false;
+bool BatteryIsCharging = false;
+bool BatteryOnlyRecharge = false;
+bool BatteryOnlyDischarge = false;
+bool BatteryIsEnabled = false;
 
-if (battery.Enabled)
+if (Battery.Enabled)
 {
-batt_IsOff = true;
-if (battery.IsFunctional)
+BatteryIsEnabled = true;
+if (Battery.IsFunctional)
 {
-if (battery.IsWorking)
+if (Battery.IsWorking)
 {
-batt_IsFunctional = true;
-if (battery.IsCharging) { batt_IsCharging = true; }
-else if (battery.ChargeMode == ChargeMode.Recharge) { batt_OnlyRecharge = true; }
-else if (battery.ChargeMode == ChargeMode.Discharge) { batt_OnlyDischarge = true; }
+BatteryIsFunctional = true;
+if (Battery.IsCharging) { BatteryIsCharging = true; }
+else if (Battery.ChargeMode == ChargeMode.Recharge) { BatteryOnlyRecharge = true; }
+else if (Battery.ChargeMode == ChargeMode.Discharge) { BatteryOnlyDischarge = true; }
 }
 }
 }
-else if (battery.IsFunctional) { batt_IsFunctional = true; }
+else if (Battery.IsFunctional) { BatteryIsFunctional = true; }
 
 bool Level_on = false;
 //if batt Charging
-if (batt_IsCharging) { Level_on = true; }
+if (BatteryIsCharging) { Level_on = true; }
 //if batt OnlyRecharge
-else if (batt_OnlyRecharge)
+else if (BatteryOnlyRecharge)
 {
 if (OnlySmallSigns)
 {
@@ -314,11 +362,11 @@ BBST22 = ""; BBST23 = "
 }
 //if batt OnlyDischarge
 }
-else if (batt_OnlyDischarge) { Level_on = true; }
+else if (BatteryOnlyDischarge) { Level_on = true; }
 //if batt Offline
-else if (!batt_IsOff) { Level_on = true; }
+else if (!BatteryIsEnabled) { Level_on = true; }
 //if batt Not Functional
-else if (!batt_IsFunctional)
+else if (!BatteryIsFunctional)
 {
 if (OnlySmallSigns)
 {
@@ -337,11 +385,11 @@ BBST29 = P17; BBST30 = P17; BBST31 = P17; BBST32 = P17; BBST33 = P17; BBST34 = P
 }
 else { Level_on = true; }
 
-if (batt_IsFunctional)
+if (BatteryIsFunctional)
 {
 if (Level_on)
 {
-if (batt_X_CurrentStored_float_X >= BatLevel_6)
+if (BatteryCurrentStored >= BatLevel_6)
 {
 if (OnlySmallSigns)
 {
@@ -358,7 +406,7 @@ BBST29 = BB_Gr; BBST30 = BB_Gr; BBST31 = BB_Gr; BBST32 = BB_Gr;
 BBST36 = BB_Gr; BBST37 = BB_Gr; BBST38 = BB_Gr; BBST39 = BB_Gr;
 }
 }
-else if (batt_X_CurrentStored_float_X >= BatLevel_5)
+else if (BatteryCurrentStored >= BatLevel_5)
 {
 if (OnlySmallSigns)
 {
@@ -374,7 +422,7 @@ BBST29 = BB_Cyan; BBST30 = BB_Cyan; BBST31 = BB_Cyan; BBST32 = BB_Cyan;
 BBST36 = BB_Cyan; BBST37 = BB_Cyan; BBST38 = BB_Cyan; BBST39 = BB_Cyan;
 }
 }
-else if (batt_X_CurrentStored_float_X >= BatLevel_4)
+else if (BatteryCurrentStored >= BatLevel_4)
 {
 if (OnlySmallSigns)
 {
@@ -389,7 +437,7 @@ BBST29 = BB_Cyan; BBST30 = BB_Cyan; BBST31 = BB_Cyan; BBST32 = BB_Cyan;
 BBST36 = BB_Cyan; BBST37 = BB_Cyan; BBST38 = BB_Cyan; BBST39 = BB_Cyan;
 }
 }
-else if (batt_X_CurrentStored_float_X >= BatLevel_3)
+else if (BatteryCurrentStored >= BatLevel_3)
 {
 if (OnlySmallSigns)
 {
@@ -403,7 +451,7 @@ BBST29 = BB_Cyan; BBST30 = BB_Cyan; BBST31 = BB_Cyan; BBST32 = BB_Cyan;
 BBST36 = BB_Cyan; BBST37 = BB_Cyan; BBST38 = BB_Cyan; BBST39 = BB_Cyan;
 }
 }
-else if (batt_X_CurrentStored_float_X >= BatLevel_2)
+else if (BatteryCurrentStored >= BatLevel_2)
 {
 if (OnlySmallSigns)
 {
@@ -416,7 +464,7 @@ BBST29 = BB_Or; BBST30 = BB_Or; BBST31 = BB_Or; BBST32 = BB_Or;
 BBST36 = BB_Cyan; BBST37 = BB_Cyan; BBST38 = BB_Cyan; BBST39 = BB_Cyan;
 }
 }
-else if (batt_X_CurrentStored_float_X >= BatLevel_1)
+else if (BatteryCurrentStored >= BatLevel_1)
 {
 if (OnlySmallSigns)
 {
@@ -559,11 +607,11 @@ CheckToShow = true;
 if (CheckToShow)
 {
 //if batt Charging
-if (batt_IsCharging)
+if (BatteryIsCharging)
 {
 Cyan_on = true;
 }
-else if (batt_OnlyRecharge)
+else if (BatteryOnlyRecharge)
 {
 //if batt OnlyRecharge
 if (OnlySmallSigns) { Px = P4; }
@@ -572,14 +620,14 @@ liX037 += Px + Bo_037; liX038 += Px + Bo_038; liX039 += Px + Bo_039; liX040 += P
 liX044 += Px + Bo_044; liX045 += Px + Bo_045; liX046 += Px + Bo_046; liX047 += Px + Bo_047; liX048 += Px + Bo_048; liX049 += Px + Bo_049; liX050 += Px + Bo_050;
 liX051 += Px + Bo_051; liX052 += Px + Bo_052; liX053 += Px + Bo_053; liX054 += Px + Bo_054; liX055 += Px + Bo_055; liX056 += Px + Bo_056; liX057 += Px + Bo_057;
 liX058 += Px + Bo_058; liX059 += Px + Bo_059; liX060 += Px + Bo_060; liX061 += Px + Bo_061; liX062 += Px + Bo_062; liX063 += Px + Bo_063;
-if (battAmountCount < WideMinValue)
+if (BatteryAmountCount < WideMinValue)
 {
 liX064 += Px + Bo_064; liX065 += Px + Bo_065; liX066 += Px + Bo_066; liX067 += Px + Bo_067; liX068 += Px + Bo_068; liX069 += Px + Bo_069;
 liX070 += Px + Bo_070; liX071 += Px + Bo_071; liX072 += Px + Bo_072; liX073 += Px + Bo_073; liX074 += Px + Bo_074; liX075 += Px + Bo_075; liX076 += Px + Bo_076; liX077 += Px + Bo_077; liX078 += Px + Bo_078; liX079 += Px + Bo_079;
 liX080 += Px + Bo_080; liX081 += Px + Bo_081; liX082 += Px + Bo_082; liX083 += Px + Bo_083; liX084 += Px + Bo_084; liX085 += Px + Bo_085; liX086 += Px + Bo_086; liX087 += Px + Bo_087; liX088 += Px + Bo_088;
 }
 }
-else if (batt_OnlyDischarge)
+else if (BatteryOnlyDischarge)
 {
 //if batt OnlyDischarge
 if (OnlySmallSigns) { Px = P4; }
@@ -588,14 +636,14 @@ liX037 += Px + BG_037; liX038 += Px + BG_038; liX039 += Px + BG_039; liX040 += P
 liX044 += Px + BG_044; liX045 += Px + BG_045; liX046 += Px + BG_046; liX047 += Px + BG_047; liX048 += Px + BG_048; liX049 += Px + BG_049; liX050 += Px + BG_050;
 liX051 += Px + BG_051; liX052 += Px + BG_052; liX053 += Px + BG_053; liX054 += Px + BG_054; liX055 += Px + BG_055; liX056 += Px + BG_056; liX057 += Px + BG_057;
 liX058 += Px + BG_058; liX059 += Px + BG_059; liX060 += Px + BG_060; liX061 += Px + BG_061; liX062 += Px + BG_062; liX063 += Px + BG_063;
-if (battAmountCount < WideMinValue)
+if (BatteryAmountCount < WideMinValue)
 {
 liX064 += Px + BG_064; liX065 += Px + BG_065; liX066 += Px + BG_066; liX067 += Px + BG_067; liX068 += Px + BG_068; liX069 += Px + BG_069;
 liX070 += Px + BG_070; liX071 += Px + BG_071; liX072 += Px + BG_072; liX073 += Px + BG_073; liX074 += Px + BG_074; liX075 += Px + BG_075; liX076 += Px + BG_076; liX077 += Px + BG_077; liX078 += Px + BG_078; liX079 += Px + BG_079;
 liX080 += Px + BG_080; liX081 += Px + BG_081; liX082 += Px + BG_082; liX083 += Px + BG_083; liX084 += Px + BG_084; liX085 += Px + BG_085; liX086 += Px + BG_086; liX087 += Px + BG_087; liX088 += Px + BG_088;
 }
 }
-else if (!batt_IsFunctional)
+else if (!BatteryIsFunctional)
 {
 //if batt Not Functional
 if (OnlySmallSigns) { Px = P4; }
@@ -604,14 +652,14 @@ liX037 += Px + BR_037; liX038 += Px + BR_038; liX039 += Px + BR_039; liX040 += P
 liX044 += Px + BR_044; liX045 += Px + BR_045; liX046 += Px + BR_046; liX047 += Px + BR_047; liX048 += Px + BR_048; liX049 += Px + BR_049; liX050 += Px + BR_050;
 liX051 += Px + BR_051; liX052 += Px + BR_052; liX053 += Px + BR_053; liX054 += Px + BR_054; liX055 += Px + BR_055; liX056 += Px + BR_056; liX057 += Px + BR_057;
 liX058 += Px + BR_058; liX059 += Px + BR_059; liX060 += Px + BR_060; liX061 += Px + BR_061; liX062 += Px + BR_062; liX063 += Px + BR_063;
-if (battAmountCount < WideMinValue)
+if (BatteryAmountCount < WideMinValue)
 {
 liX064 += Px + BR_064; liX065 += Px + BR_065; liX066 += Px + BR_066; liX067 += Px + BR_067; liX068 += Px + BR_068; liX069 += Px + BR_069;
 liX070 += Px + BR_070; liX071 += Px + BR_071; liX072 += Px + BR_072; liX073 += Px + BR_073; liX074 += Px + BR_074; liX075 += Px + BR_075; liX076 += Px + BR_076; liX077 += Px + BR_077; liX078 += Px + BR_078; liX079 += Px + BR_079;
 liX080 += Px + BR_080; liX081 += Px + BR_081; liX082 += Px + BR_082; liX083 += Px + BR_083; liX084 += Px + BR_084; liX085 += Px + BR_085; liX086 += Px + BR_086; liX087 += Px + BR_087; liX088 += Px + BR_088;
 }
 }
-else if (!batt_IsOff)
+else if (!BatteryIsEnabled)
 {
 //if batt OffliX
 if (OnlySmallSigns) { Px = P4; }
@@ -620,7 +668,7 @@ liX037 += Px + BR_037; liX038 += Px + BR_038; liX039 += Px + BR_039; liX040 += P
 liX044 += Px + BR_044; liX045 += Px + BR_045; liX046 += Px + BR_046; liX047 += Px + BR_047; liX048 += Px + BR_048; liX049 += Px + BR_049; liX050 += Px + BR_050;
 liX051 += Px + BR_051; liX052 += Px + BR_052; liX053 += Px + BR_053; liX054 += Px + BR_054; liX055 += Px + BR_055; liX056 += Px + BR_056; liX057 += Px + BR_057;
 liX058 += Px + BR_058; liX059 += Px + BR_059; liX060 += Px + BR_060; liX061 += Px + BR_061; liX062 += Px + BR_062; liX063 += Px + BR_063;
-if (battAmountCount < WideMinValue)
+if (BatteryAmountCount < WideMinValue)
 {
 liX064 += Px + BR_064; liX065 += Px + BR_065; liX066 += Px + BR_066; liX067 += Px + BR_067; liX068 += Px + BR_068; liX069 += Px + BR_069;
 liX070 += Px + BR_070; liX071 += Px + BR_071; liX072 += Px + BR_072; liX073 += Px + BR_073; liX074 += Px + BR_074; liX075 += Px + BR_075; liX076 += Px + BR_076; liX077 += Px + BR_077; liX078 += Px + BR_078; liX079 += Px + BR_079;
@@ -641,14 +689,14 @@ liX037 += Px + BC_037; liX038 += Px + BC_038; liX039 += Px + BC_039; liX040 += P
 liX044 += Px + BC_044; liX045 += Px + BC_045; liX046 += Px + BC_046; liX047 += Px + BC_047; liX048 += Px + BC_048; liX049 += Px + BC_049; liX050 += Px + BC_050;
 liX051 += Px + BC_051; liX052 += Px + BC_052; liX053 += Px + BC_053; liX054 += Px + BC_054; liX055 += Px + BC_055; liX056 += Px + BC_056; liX057 += Px + BC_057;
 liX058 += Px + BC_058; liX059 += Px + BC_059; liX060 += Px + BC_060; liX061 += Px + BC_061; liX062 += Px + BC_062; liX063 += Px + BC_063;
-if (battAmountCount < WideMinValue)
+if (BatteryAmountCount < WideMinValue)
 {
 liX064 += Px + BC_064; liX065 += Px + BC_065; liX066 += Px + BC_066; liX067 += Px + BC_067; liX068 += Px + BC_068; liX069 += Px + BC_069;
 liX070 += Px + BC_070; liX071 += Px + BC_071; liX072 += Px + BC_072; liX073 += Px + BC_073; liX074 += Px + BC_074; liX075 += Px + BC_075; liX076 += Px + BC_076; liX077 += Px + BC_077; liX078 += Px + BC_078; liX079 += Px + BC_079;
 liX080 += Px + BC_080; liX081 += Px + BC_081; liX082 += Px + BC_082; liX083 += Px + BC_083; liX084 += Px + BC_084; liX085 += Px + BC_085; liX086 += Px + BC_086; liX087 += Px + BC_087; liX088 += Px + BC_088;
 }
 }
-battAmountActualloop += 1;
+BatteryLoopCounter += 1;
 }
 int Am50_10To20 = 0;
 int Am50_20To40 = 0;
@@ -681,7 +729,7 @@ Am10_5To10 = 6;
 if (OnlySmallSigns)
 {
 // if batt Amount 19-50
-if (battAmountActualloop < Am50_10To20)
+if (BatteryLoopCounter < Am50_10To20)
 {
 //0-10
 li035 += liX037; li036 += liX038; li037 += liX039; li038 += liX040; li039 += liX041; li040 += liX042; li041 += liX043; li042 += liX044; li043 += liX045; li044 += liX046;
@@ -690,7 +738,7 @@ li055 += liX057; li056 += liX058; li057 += liX059; li058 += liX060; li059 += liX
 li062 = PxFull;
 li063 = PxFull;
 }
-else if (battAmountActualloop < Am50_20To40)
+else if (BatteryLoopCounter < Am50_20To40)
 {
 //11-20
 li064 += liX037; li065 += liX038; li066 += liX039; li067 += liX040; li068 += liX041; li069 += liX042; li070 += liX043; li071 += liX044; li072 += liX045; li073 += liX046;
@@ -699,7 +747,7 @@ li084 += liX057; li085 += liX058; li086 += liX059; li087 += liX060; li088 += liX
 li091 = PxFull;
 li092 = PxFull;
 }
-else if (battAmountActualloop < Am50_30To60)
+else if (BatteryLoopCounter < Am50_30To60)
 {
 //21-30
 li093 += liX037; li094 += liX038; li095 += liX039; li096 += liX040; li097 += liX041; li098 += liX042; li099 += liX043; li100 += liX044; li101 += liX045; li102 += liX046;
@@ -708,7 +756,7 @@ li113 += liX057; li114 += liX058; li115 += liX059; li116 += liX060; li117 += liX
 li120 = PxFull;
 li121 = PxFull;
 }
-else if (battAmountActualloop < Am50_40To80)
+else if (BatteryLoopCounter < Am50_40To80)
 {
 //31-40
 li122 += liX037; li123 += liX038; li124 += liX039; li125 += liX040; li126 += liX041; li127 += liX042; li128 += liX043; li129 += liX044; li130 += liX045; li131 += liX046;
@@ -717,7 +765,7 @@ li142 += liX057; li143 += liX058; li144 += liX059; li145 += liX060; li146 += liX
 li149 = PxFull;
 li150 = PxFull;
 }
-else if (battAmountActualloop > Am50_50To100)
+else if (BatteryLoopCounter > Am50_50To100)
 {
 //41-50
 li151 += liX037; li152 += liX038; li153 += liX039; li154 += liX040; li155 += liX041; li156 += liX042; li157 += liX043; li158 += liX044; li159 += liX045; li160 += liX046;
@@ -728,7 +776,7 @@ li171 += liX057; li172 += liX058; li173 += liX059; li174 += liX060; li175 += liX
 else
 {
 // if batt Amount 1-10
-if (battAmountActualloop < Am10_5To10)
+if (BatteryLoopCounter < Am10_5To10)
 {
 li035 = PxFull;
 li036 = PxFull;
@@ -863,7 +911,7 @@ PG_ST_028 = "" + PG_Off_028 + "�
 PG_ST_029 = "" + PG_Off_029 + "";
 PG_ST_030 = "";
 }
-if (GenSol_CurrentOutput < batt_X_CurrInput_KW_All)
+if (GenSol_CurrentOutput < BatteryCurrentInputTotal)
 {   //if needed input is lower then actual input
 PG_ST_018 = "";
 PG_ST_019 = "" + PG_L_019 + "";
@@ -952,15 +1000,15 @@ AmX030 = "";
 int CounterNumConvert = 2;
 int CheckerNumConvert = CounterNumConvert;
 
-if (batX_CurrStored_KW_All > 999999) { batX_CurrStored_KW_All = batX_CurrStored_KW_All / 1000000; batteryStoredUnit = "GWh"; }
-else if (batX_CurrStored_KW_All > 999) { batX_CurrStored_KW_All = batX_CurrStored_KW_All / 1000; batteryStoredUnit = "MWh"; }
-else if (batX_CurrStored_KW_All < 1) { batX_CurrStored_KW_All = batX_CurrStored_KW_All * 1000; batteryStoredUnit = "Wh"; }
+if (BatteryCurrentStoredTotal > 999999) { BatteryCurrentStoredTotal /= 1000000; BatteryStoredUnit = PowerMetricUnit.GWh; }
+else if (BatteryCurrentStoredTotal > 999) { BatteryCurrentStoredTotal /= 1000; BatteryStoredUnit = PowerMetricUnit.MWh; }
+else if (BatteryCurrentStoredTotal < 1) { BatteryCurrentStoredTotal *= 1000; BatteryStoredUnit = PowerMetricUnit.Wh; }
 
-int numVal = Convert.ToInt32(batX_CurrStored_KW_All);
+int numVal = Convert.ToInt32(BatteryCurrentStoredTotal);
 
 for (int i = 0; i < CounterNumConvert; i++)
 {   // Here set your Number to split
-if (CheckerNumConvert == 2) { input = battAmountActualloop; }
+if (CheckerNumConvert == 2) { input = BatteryLoopCounter; }
 else if (CheckerNumConvert == 1) { input = numVal; }
 
 // Create Variables to hold Data
@@ -1123,12 +1171,12 @@ bool Chk_Num_ShwPx = false;
 if (Chk_State == 6) { Chk_Num_ShwPx = true; }
 else if (Chk_State == 5)
 {
-if (battAmountActualloop < 10) { Chk_Num_ShwPx = true; }
+if (BatteryLoopCounter < 10) { Chk_Num_ShwPx = true; }
 }
 else if (Chk_State == 3) { Chk_Num_ShwPx = true; }
 else if (Chk_State == 2)
 {
-if (batX_CurrStored_KW_All < 10) { Chk_Num_ShwPx = true; }
+if (BatteryCurrentStoredTotal < 10) { Chk_Num_ShwPx = true; }
 }
 if (Chk_Num_ShwPx)
 {
@@ -1206,20 +1254,11 @@ string Unit_ST11 = P38;
 string Unit_ST12 = P38;
 string Unit_ST13 = P38;
 
-bool BatUnit_Wh = false;
-bool BatUnit_kWh = false;
-bool BatUnit_MWh = false;
-bool BatUnit_GWh = false;
-
-if (batteryStoredUnit == "GWh") { BatUnit_GWh = true; }
-else if (batteryStoredUnit == "MWh") { BatUnit_MWh = true; }
-else if (batteryStoredUnit == "Wh") { BatUnit_Wh = true; }
-else { BatUnit_kWh = true; }
-
 if (BatteryAllStoredEnergyEnabled)
 {
-if (BatUnit_Wh)
+switch(BatteryStoredUnit)
 {
+case PowerMetricUnit.Wh:
 Unit_ST01 = "";
 Unit_ST02 = "";
 Unit_ST03 = "";
@@ -1233,9 +1272,8 @@ Unit_ST10 = "�
 Unit_ST11 = "";
 Unit_ST12 = "";
 Unit_ST13 = "";
-}
-else if (BatUnit_MWh)
-{
+break;
+case PowerMetricUnit.MWh:
 Unit_ST01 = "";
 Unit_ST02 = "";
 Unit_ST03 = "";
@@ -1249,9 +1287,8 @@ Unit_ST10 = "�
 Unit_ST11 = "";
 Unit_ST12 = "";
 Unit_ST13 = "";
-}
-else if (BatUnit_GWh)
-{
+break;
+case PowerMetricUnit.GWh:
 Unit_ST01 = "";
 Unit_ST02 = "";
 Unit_ST03 = "";
@@ -1265,9 +1302,8 @@ Unit_ST10 = "�
 Unit_ST11 = "";
 Unit_ST12 = "";
 Unit_ST13 = "";
-}
-else if (BatUnit_kWh)
-{
+break;
+case PowerMetricUnit.kWh:
 Unit_ST01 = "";
 Unit_ST02 = "";
 Unit_ST03 = "";
@@ -1281,6 +1317,7 @@ Unit_ST10 = "�
 Unit_ST11 = "";
 Unit_ST12 = "";
 Unit_ST13 = "";
+break;
 }
 }
 //Start lis 1-3	################################
@@ -1359,20 +1396,20 @@ string str_Boundli_171_To_178 = li171 + Breakli + li172 + Breakli + li173 + Brea
 string str_AllBoundlis_001_To_178 = str_Boundli_001_To_010 + str_Boundli_011_To_020 + str_Boundli_021_To_030 + str_Boundli_031_To_040 + str_Boundli_041_To_050 + str_Boundli_051_To_060 + str_Boundli_061_To_070 + str_Boundli_071_To_080 + str_Boundli_081_To_090 + str_Boundli_091_To_100 + str_Boundli_101_To_110 + str_Boundli_111_To_120 + str_Boundli_121_To_130 + str_Boundli_131_To_140 + str_Boundli_141_To_150 + str_Boundli_151_To_160 + str_Boundli_161_To_170 + str_Boundli_171_To_178;
 
 // find all LCD with NameTag
-var BBS_TextPanels = new List<IMyTerminalBlock>();
-GridTerminalSystem.SearchBlocksOfName(LCD_NameTag, BBS_TextPanels);
+var LCDPanels = new List<IMyTerminalBlock>();
+GridTerminalSystem.SearchBlocksOfName(LCDNameTag, LCDPanels);
+Echo("Displays: " + LCDPanels.Count);
 
 // this loop send Message to show to all found Lcds
-foreach(var TerminalBlock in BBS_TextPanels)
+foreach(var TerminalBlock in LCDPanels)
 {
-var BSS_TextPanel = TerminalBlock as IMyTextPanel;
+var LCDPanel = TerminalBlock as IMyTextPanel;
 
-BSS_TextPanel.SetValue("FontColor", new Color(LCDbright, LCDbright, LCDbright)); // White
-BSS_TextPanel.SetValue("FontSize", 0.10f);    // set Font size of your LCD
-BSS_TextPanel.SetValue("Font", (long)1147350002);
-BSS_TextPanel.ShowPublicTextOnScreen();
-//BatteryStatus_Lcd_X.WritePublicText("", false);
-BSS_TextPanel.WritePublicText("" + str_AllBoundlis_001_To_178, false);
+LCDPanel.SetValue("FontColor", new Color(LCDBrightness, LCDBrightness, LCDBrightness)); // White
+LCDPanel.SetValue("FontSize", 0.10f);    // set Font size of your LCD
+LCDPanel.SetValue("Font", (long)1147350002);
+LCDPanel.ShowPublicTextOnScreen();
+LCDPanel.WritePublicText("" + str_AllBoundlis_001_To_178, false);
 }
 }
 } // End of Main script
