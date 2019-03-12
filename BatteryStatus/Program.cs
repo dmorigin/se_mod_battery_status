@@ -265,8 +265,8 @@ namespace IngameScript
 
                 float BatteryCurrentInputTotal = 0f; // Value in KW
                 float BatteryCurrentStoredTotal = 0f; // value in KW
-                int battAmountActualloop = 0;
-                int battAmountCount = BatteryList.Count;
+                int BatteryLoopCounter = 0;
+                int BatteryAmountCount = BatteryList.Count;
                 bool OnlySmallSigns = false;
 
                 int WideMaxValue = 10;
@@ -278,7 +278,7 @@ namespace IngameScript
                 }
 
                 if (OnlySmallSigns_Enabled) { OnlySmallSigns = true; }
-                else if (battAmountCount > WideMaxValue) { OnlySmallSigns = true; }
+                else if (BatteryAmountCount > WideMaxValue) { OnlySmallSigns = true; }
 
                 string pz = P2;
                 if (OnlySmallSigns)
@@ -641,7 +641,7 @@ namespace IngameScript
                             liX044 += Px + Bo_044; liX045 += Px + Bo_045; liX046 += Px + Bo_046; liX047 += Px + Bo_047; liX048 += Px + Bo_048; liX049 += Px + Bo_049; liX050 += Px + Bo_050;
                             liX051 += Px + Bo_051; liX052 += Px + Bo_052; liX053 += Px + Bo_053; liX054 += Px + Bo_054; liX055 += Px + Bo_055; liX056 += Px + Bo_056; liX057 += Px + Bo_057;
                             liX058 += Px + Bo_058; liX059 += Px + Bo_059; liX060 += Px + Bo_060; liX061 += Px + Bo_061; liX062 += Px + Bo_062; liX063 += Px + Bo_063;
-                            if (battAmountCount < WideMinValue)
+                            if (BatteryAmountCount < WideMinValue)
                             {
                                 liX064 += Px + Bo_064; liX065 += Px + Bo_065; liX066 += Px + Bo_066; liX067 += Px + Bo_067; liX068 += Px + Bo_068; liX069 += Px + Bo_069;
                                 liX070 += Px + Bo_070; liX071 += Px + Bo_071; liX072 += Px + Bo_072; liX073 += Px + Bo_073; liX074 += Px + Bo_074; liX075 += Px + Bo_075; liX076 += Px + Bo_076; liX077 += Px + Bo_077; liX078 += Px + Bo_078; liX079 += Px + Bo_079;
@@ -657,7 +657,7 @@ namespace IngameScript
                             liX044 += Px + BG_044; liX045 += Px + BG_045; liX046 += Px + BG_046; liX047 += Px + BG_047; liX048 += Px + BG_048; liX049 += Px + BG_049; liX050 += Px + BG_050;
                             liX051 += Px + BG_051; liX052 += Px + BG_052; liX053 += Px + BG_053; liX054 += Px + BG_054; liX055 += Px + BG_055; liX056 += Px + BG_056; liX057 += Px + BG_057;
                             liX058 += Px + BG_058; liX059 += Px + BG_059; liX060 += Px + BG_060; liX061 += Px + BG_061; liX062 += Px + BG_062; liX063 += Px + BG_063;
-                            if (battAmountCount < WideMinValue)
+                            if (BatteryAmountCount < WideMinValue)
                             {
                                 liX064 += Px + BG_064; liX065 += Px + BG_065; liX066 += Px + BG_066; liX067 += Px + BG_067; liX068 += Px + BG_068; liX069 += Px + BG_069;
                                 liX070 += Px + BG_070; liX071 += Px + BG_071; liX072 += Px + BG_072; liX073 += Px + BG_073; liX074 += Px + BG_074; liX075 += Px + BG_075; liX076 += Px + BG_076; liX077 += Px + BG_077; liX078 += Px + BG_078; liX079 += Px + BG_079;
@@ -673,7 +673,7 @@ namespace IngameScript
                             liX044 += Px + BR_044; liX045 += Px + BR_045; liX046 += Px + BR_046; liX047 += Px + BR_047; liX048 += Px + BR_048; liX049 += Px + BR_049; liX050 += Px + BR_050;
                             liX051 += Px + BR_051; liX052 += Px + BR_052; liX053 += Px + BR_053; liX054 += Px + BR_054; liX055 += Px + BR_055; liX056 += Px + BR_056; liX057 += Px + BR_057;
                             liX058 += Px + BR_058; liX059 += Px + BR_059; liX060 += Px + BR_060; liX061 += Px + BR_061; liX062 += Px + BR_062; liX063 += Px + BR_063;
-                            if (battAmountCount < WideMinValue)
+                            if (BatteryAmountCount < WideMinValue)
                             {
                                 liX064 += Px + BR_064; liX065 += Px + BR_065; liX066 += Px + BR_066; liX067 += Px + BR_067; liX068 += Px + BR_068; liX069 += Px + BR_069;
                                 liX070 += Px + BR_070; liX071 += Px + BR_071; liX072 += Px + BR_072; liX073 += Px + BR_073; liX074 += Px + BR_074; liX075 += Px + BR_075; liX076 += Px + BR_076; liX077 += Px + BR_077; liX078 += Px + BR_078; liX079 += Px + BR_079;
@@ -689,7 +689,7 @@ namespace IngameScript
                             liX044 += Px + BR_044; liX045 += Px + BR_045; liX046 += Px + BR_046; liX047 += Px + BR_047; liX048 += Px + BR_048; liX049 += Px + BR_049; liX050 += Px + BR_050;
                             liX051 += Px + BR_051; liX052 += Px + BR_052; liX053 += Px + BR_053; liX054 += Px + BR_054; liX055 += Px + BR_055; liX056 += Px + BR_056; liX057 += Px + BR_057;
                             liX058 += Px + BR_058; liX059 += Px + BR_059; liX060 += Px + BR_060; liX061 += Px + BR_061; liX062 += Px + BR_062; liX063 += Px + BR_063;
-                            if (battAmountCount < WideMinValue)
+                            if (BatteryAmountCount < WideMinValue)
                             {
                                 liX064 += Px + BR_064; liX065 += Px + BR_065; liX066 += Px + BR_066; liX067 += Px + BR_067; liX068 += Px + BR_068; liX069 += Px + BR_069;
                                 liX070 += Px + BR_070; liX071 += Px + BR_071; liX072 += Px + BR_072; liX073 += Px + BR_073; liX074 += Px + BR_074; liX075 += Px + BR_075; liX076 += Px + BR_076; liX077 += Px + BR_077; liX078 += Px + BR_078; liX079 += Px + BR_079;
@@ -710,14 +710,14 @@ namespace IngameScript
                             liX044 += Px + BC_044; liX045 += Px + BC_045; liX046 += Px + BC_046; liX047 += Px + BC_047; liX048 += Px + BC_048; liX049 += Px + BC_049; liX050 += Px + BC_050;
                             liX051 += Px + BC_051; liX052 += Px + BC_052; liX053 += Px + BC_053; liX054 += Px + BC_054; liX055 += Px + BC_055; liX056 += Px + BC_056; liX057 += Px + BC_057;
                             liX058 += Px + BC_058; liX059 += Px + BC_059; liX060 += Px + BC_060; liX061 += Px + BC_061; liX062 += Px + BC_062; liX063 += Px + BC_063;
-                            if (battAmountCount < WideMinValue)
+                            if (BatteryAmountCount < WideMinValue)
                             {
                                 liX064 += Px + BC_064; liX065 += Px + BC_065; liX066 += Px + BC_066; liX067 += Px + BC_067; liX068 += Px + BC_068; liX069 += Px + BC_069;
                                 liX070 += Px + BC_070; liX071 += Px + BC_071; liX072 += Px + BC_072; liX073 += Px + BC_073; liX074 += Px + BC_074; liX075 += Px + BC_075; liX076 += Px + BC_076; liX077 += Px + BC_077; liX078 += Px + BC_078; liX079 += Px + BC_079;
                                 liX080 += Px + BC_080; liX081 += Px + BC_081; liX082 += Px + BC_082; liX083 += Px + BC_083; liX084 += Px + BC_084; liX085 += Px + BC_085; liX086 += Px + BC_086; liX087 += Px + BC_087; liX088 += Px + BC_088;
                             }
                         }
-                        battAmountActualloop += 1;
+                        BatteryLoopCounter += 1;
                     }
                     int Am50_10To20 = 0;
                     int Am50_20To40 = 0;
@@ -750,7 +750,7 @@ namespace IngameScript
                     if (OnlySmallSigns)
                     {
                         // if batt Amount 19-50
-                        if (battAmountActualloop < Am50_10To20)
+                        if (BatteryLoopCounter < Am50_10To20)
                         {
                             //0-10
                             li035 += liX037; li036 += liX038; li037 += liX039; li038 += liX040; li039 += liX041; li040 += liX042; li041 += liX043; li042 += liX044; li043 += liX045; li044 += liX046;
@@ -759,7 +759,7 @@ namespace IngameScript
                             li062 = PxFull;
                             li063 = PxFull;
                         }
-                        else if (battAmountActualloop < Am50_20To40)
+                        else if (BatteryLoopCounter < Am50_20To40)
                         {
                             //11-20
                             li064 += liX037; li065 += liX038; li066 += liX039; li067 += liX040; li068 += liX041; li069 += liX042; li070 += liX043; li071 += liX044; li072 += liX045; li073 += liX046;
@@ -768,7 +768,7 @@ namespace IngameScript
                             li091 = PxFull;
                             li092 = PxFull;
                         }
-                        else if (battAmountActualloop < Am50_30To60)
+                        else if (BatteryLoopCounter < Am50_30To60)
                         {
                             //21-30
                             li093 += liX037; li094 += liX038; li095 += liX039; li096 += liX040; li097 += liX041; li098 += liX042; li099 += liX043; li100 += liX044; li101 += liX045; li102 += liX046;
@@ -777,7 +777,7 @@ namespace IngameScript
                             li120 = PxFull;
                             li121 = PxFull;
                         }
-                        else if (battAmountActualloop < Am50_40To80)
+                        else if (BatteryLoopCounter < Am50_40To80)
                         {
                             //31-40
                             li122 += liX037; li123 += liX038; li124 += liX039; li125 += liX040; li126 += liX041; li127 += liX042; li128 += liX043; li129 += liX044; li130 += liX045; li131 += liX046;
@@ -786,7 +786,7 @@ namespace IngameScript
                             li149 = PxFull;
                             li150 = PxFull;
                         }
-                        else if (battAmountActualloop > Am50_50To100)
+                        else if (BatteryLoopCounter > Am50_50To100)
                         {
                             //41-50
                             li151 += liX037; li152 += liX038; li153 += liX039; li154 += liX040; li155 += liX041; li156 += liX042; li157 += liX043; li158 += liX044; li159 += liX045; li160 += liX046;
@@ -797,7 +797,7 @@ namespace IngameScript
                     else
                     {
                         // if batt Amount 1-10
-                        if (battAmountActualloop < Am10_5To10)
+                        if (BatteryLoopCounter < Am10_5To10)
                         {
                             li035 = PxFull;
                             li036 = PxFull;
@@ -1029,7 +1029,7 @@ namespace IngameScript
 
                 for (int i = 0; i < CounterNumConvert; i++)
                 {   // Here set your Number to split
-                    if (CheckerNumConvert == 2) { input = battAmountActualloop; }
+                    if (CheckerNumConvert == 2) { input = BatteryLoopCounter; }
                     else if (CheckerNumConvert == 1) { input = numVal; }
 
                     // Create Variables to hold Data
@@ -1192,7 +1192,7 @@ namespace IngameScript
                         if (Chk_State == 6) { Chk_Num_ShwPx = true; }
                         else if (Chk_State == 5)
                         {
-                            if (battAmountActualloop < 10) { Chk_Num_ShwPx = true; }
+                            if (BatteryLoopCounter < 10) { Chk_Num_ShwPx = true; }
                         }
                         else if (Chk_State == 3) { Chk_Num_ShwPx = true; }
                         else if (Chk_State == 2)
