@@ -259,14 +259,14 @@ namespace IngameScript
                 //Battery Status	########################################
 
                 // Create list with all Batterys attached/added
-                var batteryList = new List<IMyBatteryBlock>(); //create new empty list
-                GridTerminalSystem.GetBlocksOfType<IMyBatteryBlock>(batteryList); //put all Batterys in this list
-                Echo("Batteries: " + batteryList.Count);
+                var BatteryList = new List<IMyBatteryBlock>(); //create new empty list
+                GridTerminalSystem.GetBlocksOfType<IMyBatteryBlock>(BatteryList); //put all Batterys in this list
+                Echo("Batteries: " + BatteryList.Count);
 
                 float BatteryCurrentInputTotal = 0f; // Value in KW
                 float BatteryCurrentStoredTotal = 0f; // value in KW
                 int battAmountActualloop = 0;
-                int battAmountCount = batteryList.Count;
+                int battAmountCount = BatteryList.Count;
                 bool OnlySmallSigns = false;
 
                 int WideMaxValue = 10;
@@ -295,17 +295,17 @@ namespace IngameScript
                     li165 = pz; li166 = pz; li167 = pz; li168 = pz; li169 = pz; li170 = pz; li171 = pz; li172 = pz; li173 = pz; li174 = pz; li175 = pz; li176 = pz; li177 = pz;
                 }
 
-                foreach (var battery in batteryList)
+                foreach (var Battery in BatteryList)
                 {
                     OnlyNameTag = false;
                     if (OnlyBatteryWithNameTag)
                     {
-                        if (battery.CustomName.Contains(BatteryNameTag)) { OnlyNameTag = true; }
+                        if (Battery.CustomName.Contains(BatteryNameTag)) { OnlyNameTag = true; }
                     }
 
                     // replacement for the string operations
-                    float BatteryCurrentInput = battery.CurrentInput * 1000f;
-                    float BatteryCurrentStored = battery.CurrentStoredPower * 1000f;
+                    float BatteryCurrentInput = Battery.CurrentInput * 1000f;
+                    float BatteryCurrentStored = Battery.CurrentStoredPower * 1000f;
 
                     if (OnlyBatteryWithNameTag)
                     {
@@ -322,7 +322,7 @@ namespace IngameScript
                     }
 
                     //Get Battery ST in percent
-                    float BatLevel = (battery.MaxStoredPower * 1000f) / 6; //Battery Level 1 percent
+                    float BatLevel = (Battery.MaxStoredPower * 1000f) / 6; //Battery Level 1 percent
                     float BatLevel_1 = BatLevel; // 1 Bar
                     float BatLevel_2 = BatLevel * 2; // 2 Bar
                     float BatLevel_3 = BatLevel * 3; // 3 Bar
@@ -340,33 +340,33 @@ namespace IngameScript
                     string BBST20 = Py; string BBST21 = Py; string BBST22 = Py; string BBST23 = Py; string BBST24 = Py; string BBST25 = Py; string BBST26 = Py; string BBST27 = Py; string BBST28 = Py; string BBST29 = Py;
                     string BBST30 = Py; string BBST31 = Py; string BBST32 = Py; string BBST33 = Py; string BBST34 = Py; string BBST35 = Py; string BBST36 = Py; string BBST37 = Py; string BBST38 = Py; string BBST39 = Py;
 
-                    bool batt_IsFunctional = false;
-                    bool batt_IsCharging = false;
-                    bool batt_OnlyRecharge = false;
-                    bool batt_OnlyDischarge = false;
-                    bool batt_IsEnabled = false;
+                    bool BatteryIsFunctional = false;
+                    bool BatteryIsCharging = false;
+                    bool BatteryOnlyRecharge = false;
+                    bool BatteryOnlyDischarge = false;
+                    bool BatteryIsEnabled = false;
 
-                    if (battery.Enabled)
+                    if (Battery.Enabled)
                     {
-                        batt_IsEnabled = true;
-                        if (battery.IsFunctional)
+                        BatteryIsEnabled = true;
+                        if (Battery.IsFunctional)
                         {
-                            if (battery.IsWorking)
+                            if (Battery.IsWorking)
                             {
-                                batt_IsFunctional = true;
-                                if (battery.IsCharging) { batt_IsCharging = true; }
-                                else if (battery.ChargeMode == ChargeMode.Recharge) { batt_OnlyRecharge = true; }
-                                else if (battery.ChargeMode == ChargeMode.Discharge) { batt_OnlyDischarge = true; }
+                                BatteryIsFunctional = true;
+                                if (Battery.IsCharging) { BatteryIsCharging = true; }
+                                else if (Battery.ChargeMode == ChargeMode.Recharge) { BatteryOnlyRecharge = true; }
+                                else if (Battery.ChargeMode == ChargeMode.Discharge) { BatteryOnlyDischarge = true; }
                             }
                         }
                     }
-                    else if (battery.IsFunctional) { batt_IsFunctional = true; }
+                    else if (Battery.IsFunctional) { BatteryIsFunctional = true; }
 
                     bool Level_on = false;
                     //if batt Charging
-                    if (batt_IsCharging) { Level_on = true; }
+                    if (BatteryIsCharging) { Level_on = true; }
                     //if batt OnlyRecharge
-                    else if (batt_OnlyRecharge)
+                    else if (BatteryOnlyRecharge)
                     {
                         if (OnlySmallSigns)
                         {
@@ -383,11 +383,11 @@ namespace IngameScript
                         }
                         //if batt OnlyDischarge
                     }
-                    else if (batt_OnlyDischarge) { Level_on = true; }
+                    else if (BatteryOnlyDischarge) { Level_on = true; }
                     //if batt Offline
-                    else if (!batt_IsEnabled) { Level_on = true; }
+                    else if (!BatteryIsEnabled) { Level_on = true; }
                     //if batt Not Functional
-                    else if (!batt_IsFunctional)
+                    else if (!BatteryIsFunctional)
                     {
                         if (OnlySmallSigns)
                         {
@@ -406,7 +406,7 @@ namespace IngameScript
                     }
                     else { Level_on = true; }
 
-                    if (batt_IsFunctional)
+                    if (BatteryIsFunctional)
                     {
                         if (Level_on)
                         {
@@ -628,11 +628,11 @@ namespace IngameScript
                     if (CheckToShow)
                     {
                         //if batt Charging
-                        if (batt_IsCharging)
+                        if (BatteryIsCharging)
                         {
                             Cyan_on = true;
                         }
-                        else if (batt_OnlyRecharge)
+                        else if (BatteryOnlyRecharge)
                         {
                             //if batt OnlyRecharge
                             if (OnlySmallSigns) { Px = P4; }
@@ -648,7 +648,7 @@ namespace IngameScript
                                 liX080 += Px + Bo_080; liX081 += Px + Bo_081; liX082 += Px + Bo_082; liX083 += Px + Bo_083; liX084 += Px + Bo_084; liX085 += Px + Bo_085; liX086 += Px + Bo_086; liX087 += Px + Bo_087; liX088 += Px + Bo_088;
                             }
                         }
-                        else if (batt_OnlyDischarge)
+                        else if (BatteryOnlyDischarge)
                         {
                             //if batt OnlyDischarge
                             if (OnlySmallSigns) { Px = P4; }
@@ -664,7 +664,7 @@ namespace IngameScript
                                 liX080 += Px + BG_080; liX081 += Px + BG_081; liX082 += Px + BG_082; liX083 += Px + BG_083; liX084 += Px + BG_084; liX085 += Px + BG_085; liX086 += Px + BG_086; liX087 += Px + BG_087; liX088 += Px + BG_088;
                             }
                         }
-                        else if (!batt_IsFunctional)
+                        else if (!BatteryIsFunctional)
                         {
                             //if batt Not Functional
                             if (OnlySmallSigns) { Px = P4; }
@@ -680,7 +680,7 @@ namespace IngameScript
                                 liX080 += Px + BR_080; liX081 += Px + BR_081; liX082 += Px + BR_082; liX083 += Px + BR_083; liX084 += Px + BR_084; liX085 += Px + BR_085; liX086 += Px + BR_086; liX087 += Px + BR_087; liX088 += Px + BR_088;
                             }
                         }
-                        else if (!batt_IsEnabled)
+                        else if (!BatteryIsEnabled)
                         {
                             //if batt OffliX
                             if (OnlySmallSigns) { Px = P4; }
