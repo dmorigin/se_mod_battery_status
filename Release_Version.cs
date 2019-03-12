@@ -139,7 +139,7 @@ BatteryTitle_Enabled = GetConfigBool(parser, "display", "ShowBatteryTitle", true
 Underline_1_Enabled = GetConfigBool(parser, "display", "ShowUnderlineBelowTitle", true);
 Underline_2_Enabled = GetConfigBool(parser, "display", "ShowUnderlineBelowStatus", true);
 BatSpaceline_Enabled = GetConfigBool(parser, "display", "ShowSeperatorInStatus", true);
-BatteryAmountEnabled = GetConfigBool(parser, "display", "ShowBatteryAmmount", true);
+BatteryAmountEnabled = GetConfigBool(parser, "display", "ShowBatteryAmount", true);
 BatteryAllStoredEnergyEnabled = GetConfigBool(parser, "display", "ShowTotalStoredPower", true);
 }
 }
