@@ -98,6 +98,17 @@ namespace IngameScript
         bool PowerInput_Enabled = true; // true = Show Power Input supply, Flash-Symbol changes color for different states, false = off
 
 
+        int SelfUpSysCounttimes = 5;
+        int SelfUpSysCounter = 0;
+
+        enum PowerUnit
+        {
+            Wh,
+            kWh,
+            MWh,
+            GWh
+        };
+
         //Dont touch the script below, to prevent errors
         //################################################################################
         private bool GetConfigBool(MyIni parser, string section, string key, bool defaultValue = false)
@@ -170,9 +181,6 @@ namespace IngameScript
             // empty
         }
 
-        int SelfUpSysCounttimes = 5;
-        int SelfUpSysCounter = 0;
-
         // Main Script Start
         public void Main(string argument, UpdateType updateSource)
         {
@@ -204,7 +212,7 @@ namespace IngameScript
             {
                 Echo("\nBattery Status script:\nby Lightwolf\nModified by DMOrigin\n\nSelf Updating every " + SelfUpSys_perSecond + " Seconds\n");
 
-                string batteryStoredUnit = "kWh";
+                PowerUnit BatteryStoredUnit = PowerUnit.kWh;
                 bool OnlyNameTag = false;
 
                 //Pixel Tempelates
@@ -1013,9 +1021,9 @@ namespace IngameScript
                 int CounterNumConvert = 2;
                 int CheckerNumConvert = CounterNumConvert;
 
-                if (BatteryCurrentStoredTotal > 999999) { BatteryCurrentStoredTotal = BatteryCurrentStoredTotal / 1000000; batteryStoredUnit = "GWh"; }
-                else if (BatteryCurrentStoredTotal > 999) { BatteryCurrentStoredTotal = BatteryCurrentStoredTotal / 1000; batteryStoredUnit = "MWh"; }
-                else if (BatteryCurrentStoredTotal < 1) { BatteryCurrentStoredTotal = BatteryCurrentStoredTotal * 1000; batteryStoredUnit = "Wh"; }
+                if (BatteryCurrentStoredTotal > 999999) { BatteryCurrentStoredTotal /= 1000000; BatteryStoredUnit = PowerUnit.GWh; }
+                else if (BatteryCurrentStoredTotal > 999) { BatteryCurrentStoredTotal /= 1000; BatteryStoredUnit = PowerUnit.MWh; }
+                else if (BatteryCurrentStoredTotal < 1) { BatteryCurrentStoredTotal *= 1000; BatteryStoredUnit = PowerUnit.Wh; }
 
                 int numVal = Convert.ToInt32(BatteryCurrentStoredTotal);
 
@@ -1267,81 +1275,70 @@ namespace IngameScript
                 string Unit_ST12 = P38;
                 string Unit_ST13 = P38;
 
-                bool BatUnit_Wh = false;
-                bool BatUnit_kWh = false;
-                bool BatUnit_MWh = false;
-                bool BatUnit_GWh = false;
-
-                if (batteryStoredUnit == "GWh") { BatUnit_GWh = true; }
-                else if (batteryStoredUnit == "MWh") { BatUnit_MWh = true; }
-                else if (batteryStoredUnit == "Wh") { BatUnit_Wh = true; }
-                else { BatUnit_kWh = true; }
-
                 if (BatteryAllStoredEnergyEnabled)
                 {
-                    if (BatUnit_Wh)
+                    switch(BatteryStoredUnit)
                     {
-                        Unit_ST01 = "";
-                        Unit_ST02 = "";
-                        Unit_ST03 = "";
-                        Unit_ST04 = "";
-                        Unit_ST05 = "";
-                        Unit_ST06 = "";
-                        Unit_ST07 = "";
-                        Unit_ST08 = "";
-                        Unit_ST09 = "";
-                        Unit_ST10 = "";
-                        Unit_ST11 = "";
-                        Unit_ST12 = "";
-                        Unit_ST13 = "";
-                    }
-                    else if (BatUnit_MWh)
-                    {
-                        Unit_ST01 = "";
-                        Unit_ST02 = "";
-                        Unit_ST03 = "";
-                        Unit_ST04 = "";
-                        Unit_ST05 = "";
-                        Unit_ST06 = "";
-                        Unit_ST07 = "";
-                        Unit_ST08 = "";
-                        Unit_ST09 = "";
-                        Unit_ST10 = "";
-                        Unit_ST11 = "";
-                        Unit_ST12 = "";
-                        Unit_ST13 = "";
-                    }
-                    else if (BatUnit_GWh)
-                    {
-                        Unit_ST01 = "";
-                        Unit_ST02 = "";
-                        Unit_ST03 = "";
-                        Unit_ST04 = "";
-                        Unit_ST05 = "";
-                        Unit_ST06 = "";
-                        Unit_ST07 = "";
-                        Unit_ST08 = "";
-                        Unit_ST09 = "";
-                        Unit_ST10 = "";
-                        Unit_ST11 = "";
-                        Unit_ST12 = "";
-                        Unit_ST13 = "";
-                    }
-                    else if (BatUnit_kWh)
-                    {
-                        Unit_ST01 = "";
-                        Unit_ST02 = "";
-                        Unit_ST03 = "";
-                        Unit_ST04 = "";
-                        Unit_ST05 = "";
-                        Unit_ST06 = "";
-                        Unit_ST07 = "";
-                        Unit_ST08 = "";
-                        Unit_ST09 = "";
-                        Unit_ST10 = "";
-                        Unit_ST11 = "";
-                        Unit_ST12 = "";
-                        Unit_ST13 = "";
+                        case PowerUnit.Wh:
+                            Unit_ST01 = "";
+                            Unit_ST02 = "";
+                            Unit_ST03 = "";
+                            Unit_ST04 = "";
+                            Unit_ST05 = "";
+                            Unit_ST06 = "";
+                            Unit_ST07 = "";
+                            Unit_ST08 = "";
+                            Unit_ST09 = "";
+                            Unit_ST10 = "";
+                            Unit_ST11 = "";
+                            Unit_ST12 = "";
+                            Unit_ST13 = "";
+                            break;
+                        case PowerUnit.MWh:
+                            Unit_ST01 = "";
+                            Unit_ST02 = "";
+                            Unit_ST03 = "";
+                            Unit_ST04 = "";
+                            Unit_ST05 = "";
+                            Unit_ST06 = "";
+                            Unit_ST07 = "";
+                            Unit_ST08 = "";
+                            Unit_ST09 = "";
+                            Unit_ST10 = "";
+                            Unit_ST11 = "";
+                            Unit_ST12 = "";
+                            Unit_ST13 = "";
+                            break;
+                        case PowerUnit.GWh:
+                            Unit_ST01 = "";
+                            Unit_ST02 = "";
+                            Unit_ST03 = "";
+                            Unit_ST04 = "";
+                            Unit_ST05 = "";
+                            Unit_ST06 = "";
+                            Unit_ST07 = "";
+                            Unit_ST08 = "";
+                            Unit_ST09 = "";
+                            Unit_ST10 = "";
+                            Unit_ST11 = "";
+                            Unit_ST12 = "";
+                            Unit_ST13 = "";
+                            break;
+                        case PowerUnit.kWh:
+                            Unit_ST01 = "";
+                            Unit_ST02 = "";
+                            Unit_ST03 = "";
+                            Unit_ST04 = "";
+                            Unit_ST05 = "";
+                            Unit_ST06 = "";
+                            Unit_ST07 = "";
+                            Unit_ST08 = "";
+                            Unit_ST09 = "";
+                            Unit_ST10 = "";
+                            Unit_ST11 = "";
+                            Unit_ST12 = "";
+                            Unit_ST13 = "";
+                            break;
                     }
                 }
                 //Start lis 1-3	################################
