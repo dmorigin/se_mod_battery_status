@@ -101,7 +101,7 @@ namespace IngameScript
         int SelfUpSysCounttimes = 5;
         int SelfUpSysCounter = 0;
 
-        enum PowerUnit
+        enum PowerMetricUnit
         {
             Wh,
             kWh,
@@ -212,7 +212,7 @@ namespace IngameScript
             {
                 Echo("\nBattery Status script:\nby Lightwolf\nModified by DMOrigin\n\nSelf Updating every " + SelfUpSys_perSecond + " Seconds\n");
 
-                PowerUnit BatteryStoredUnit = PowerUnit.kWh;
+                PowerMetricUnit BatteryStoredUnit = PowerMetricUnit.kWh;
                 bool OnlyNameTag = false;
 
                 //Pixel Tempelates
@@ -1021,9 +1021,9 @@ namespace IngameScript
                 int CounterNumConvert = 2;
                 int CheckerNumConvert = CounterNumConvert;
 
-                if (BatteryCurrentStoredTotal > 999999) { BatteryCurrentStoredTotal /= 1000000; BatteryStoredUnit = PowerUnit.GWh; }
-                else if (BatteryCurrentStoredTotal > 999) { BatteryCurrentStoredTotal /= 1000; BatteryStoredUnit = PowerUnit.MWh; }
-                else if (BatteryCurrentStoredTotal < 1) { BatteryCurrentStoredTotal *= 1000; BatteryStoredUnit = PowerUnit.Wh; }
+                if (BatteryCurrentStoredTotal > 999999) { BatteryCurrentStoredTotal /= 1000000; BatteryStoredUnit = PowerMetricUnit.GWh; }
+                else if (BatteryCurrentStoredTotal > 999) { BatteryCurrentStoredTotal /= 1000; BatteryStoredUnit = PowerMetricUnit.MWh; }
+                else if (BatteryCurrentStoredTotal < 1) { BatteryCurrentStoredTotal *= 1000; BatteryStoredUnit = PowerMetricUnit.Wh; }
 
                 int numVal = Convert.ToInt32(BatteryCurrentStoredTotal);
 
@@ -1279,7 +1279,7 @@ namespace IngameScript
                 {
                     switch(BatteryStoredUnit)
                     {
-                        case PowerUnit.Wh:
+                        case PowerMetricUnit.Wh:
                             Unit_ST01 = "";
                             Unit_ST02 = "";
                             Unit_ST03 = "";
@@ -1294,7 +1294,7 @@ namespace IngameScript
                             Unit_ST12 = "";
                             Unit_ST13 = "";
                             break;
-                        case PowerUnit.MWh:
+                        case PowerMetricUnit.MWh:
                             Unit_ST01 = "";
                             Unit_ST02 = "";
                             Unit_ST03 = "";
@@ -1309,7 +1309,7 @@ namespace IngameScript
                             Unit_ST12 = "";
                             Unit_ST13 = "";
                             break;
-                        case PowerUnit.GWh:
+                        case PowerMetricUnit.GWh:
                             Unit_ST01 = "";
                             Unit_ST02 = "";
                             Unit_ST03 = "";
@@ -1324,7 +1324,7 @@ namespace IngameScript
                             Unit_ST12 = "";
                             Unit_ST13 = "";
                             break;
-                        case PowerUnit.kWh:
+                        case PowerMetricUnit.kWh:
                             Unit_ST01 = "";
                             Unit_ST02 = "";
                             Unit_ST03 = "";
