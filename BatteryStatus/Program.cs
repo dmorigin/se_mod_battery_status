@@ -33,11 +33,12 @@ namespace IngameScript
             This script shows Battery level state on standart LCDs or wide LCDs, as digital Symbols
             Just edit your options, and it you will able to overwatch up to 100 Battery's very easy.*/
 
-        //-----   Generals    -----
+
+        //-----   Battery Settings    -----
 
         // LCD / Text Panel to show status
         // All LCD with a specific NameTag included in their name, will be show the information. You can edit the NameTag here.
-        string LCD_NameTag = "[Battery Status LCD]"; //example: my LCD 31 [Battery Status LCD]
+        string LCDNameTag = "[Battery Status LCD]"; //example: my LCD 31 [Battery Status LCD]
 
         // NameTags Specific Blocks
         // on default this script search for all Battery's attached, and show there Status, but somethimes you want be able to
@@ -48,28 +49,33 @@ namespace IngameScript
         //	you can change the Nametag here.
         string BatteryNameTag = "[Battery-Status]"; // NameTag to show only specific Battery's, example: my Battery 15 [Battery-Status]
 
-        //-----   Display Settings    -----
+        //-----   LCD Settings    -----
 
         // Wide LCD or LCD
         // on default it shows a total amount of max. 50 Battery's. There's a option to show a total amount of 100 Battery's, but this only works for wide LCDs,
         // on 1x1 LCD will be then shown just the half information! if you use Wide LCDs, then set WideLCD to true.
         bool WideLCD = false; // true = 50 Battery's, false = Show on wide LCD's up to 100 Battery's
 
-        // this script change size of the Symbols depending of the amount.
-        // it shows Large Symbols for an total amount of 1-10 Battery's on 1x1 LCDs, and a total amount of 1-20 Battery's on wide LCDs, all amount above will be shown
-        // in small Symbols, to show always small Symbols set it to true
-        bool OnlySmallSigns_Enabled = false; // true = always small symbols, false = depending on amount
+        // LCD Brightness
+        // 0-255, 0 = dark, 255 = Bright
+        int LCDBrightness = 255;
+
+        //-----   System Settings    -----
 
         // Self updating System
         // thanks to SpaceEngeneers Update 1.185.1, we are able to use a new system, no need for timer,
         // false = you need an activation
         bool SelfUpdatingSys_Enabled = true; // false = Off, true = after compile script Selfupdating starts
 
-
         //if Self updating System enabled you can choose how many times per second the script will be activated
         int SelfUpSys_perSecond = 2; // 1 = 1 sec, 2 = 2 sec etc.
 
-        //-----   Other Settings    -----
+        //-----   Display Settings    -----
+
+        // this script change size of the Symbols depending of the amount.
+        // it shows Large Symbols for an total amount of 1-10 Battery's on 1x1 LCDs, and a total amount of 1-20 Battery's on wide LCDs, all amount above will be shown
+        // in small Symbols, to show always small Symbols set it to true
+        bool OnlySmallSigns_Enabled = false; // true = always small symbols, false = depending on amount
 
         // Shows Title on top of the LCD / Text Panel
         // "BATTERY STATUS" as title on Top, if disabled it leaves it space black
@@ -91,23 +97,68 @@ namespace IngameScript
         // Power Input below needed supply = Orange
         bool PowerInput_Enabled = true; // true = Show Power Input supply, Flash-Symbol changes color for different states, false = off
 
-        // LCD Brightness
-        // 0-255, 0 = dark, 255 = Bright
-        int LCDbright = 255;
-        /*
-        # 	Kown Issues:
-        # 	after the small Update from 20.11.17 there is a Bug...
-        # 	-	if you placeing or deleting a SolarPanel, it stops the script, recompile and run it again
-        #
-        # 	General Thanks to the Community, to all that share their knowledge, that helped me a lot to make this
-        # 	scripts working. Thanks for that.
-        */
-
 
         //Dont touch the script below, to prevent errors
         //################################################################################
+        private bool GetConfigBool(MyIni parser, string section, string key, bool defaultValue = false)
+        {
+            if (parser.ContainsKey(section, key))
+                return parser.Get(section, key).ToBoolean();
+
+            return defaultValue;
+        }
+
+        private string GetConfigString(MyIni parser, string section, string key, string defaultValue = "")
+        {
+            if (parser.ContainsKey(section, key))
+                return parser.Get(section, key).ToString();
+
+            return defaultValue;
+        }
+
+        private int GetConfigInteger(MyIni parser, string section, string key, int defaultValue = 0)
+        {
+            if (parser.ContainsKey(section, key))
+                return parser.Get(section, key).ToInt32();
+
+            return defaultValue;
+        }
+
+        private void ReadConfiguration()
+        {
+            MyIni parser = new MyIni();
+            MyIniParseResult result;
+            if (parser.TryParse(Me.CustomData, out result))
+            {
+                // battery settings
+                OnlyBatteryWithNameTag = GetConfigBool(parser, "battery", "OnlyWithNameTag", false);
+                BatteryNameTag = GetConfigString(parser, "battery", "NameTag", "[Battery-Status]");
+
+                // lcd settings
+                LCDNameTag = GetConfigString(parser, "lcd", "NameTag", "[Battery Status LCD]");
+                WideLCD = GetConfigBool(parser, "lcd", "Widescreen", false);
+                LCDBrightness = GetConfigInteger(parser, "lcd", "Brightness", 255);
+
+                // system settings
+                SelfUpdatingSys_Enabled = GetConfigBool(parser, "system", "UpdatingEnabled", true);
+                SelfUpSys_perSecond = GetConfigInteger(parser, "system", "UpdateInterval", 2);
+
+                // display settings
+                OnlySmallSigns_Enabled = GetConfigBool(parser, "display", "OnlySmallSigns", false);
+                BatteryTitle_Enabled = GetConfigBool(parser, "display", "ShowBatteryTitle", true);
+                Underline_1_Enabled = GetConfigBool(parser, "display", "ShowUnderlineBelowTitle", true);
+                Underline_2_Enabled = GetConfigBool(parser, "display", "ShowUnderlineBelowStatus", true);
+                BatSpaceline_Enabled = GetConfigBool(parser, "display", "ShowSeperatorInStatus", true);
+                BatteryAmountEnabled = GetConfigBool(parser, "display", "ShowBatteryAmmount", true);
+                BatteryAllStoredEnergyEnabled = GetConfigBool(parser, "display", "ShowTotalStoredPower", true);
+            }
+        }
+
         public Program()
         {
+            // read configuration
+            ReadConfiguration();
+
             if (SelfUpdatingSys_Enabled)
             {
                 Runtime.UpdateFrequency = UpdateFrequency.Update10;
@@ -125,6 +176,11 @@ namespace IngameScript
         // Main Script Start
         public void Main(string argument, UpdateType updateSource)
         {
+            if (argument.Contains("readConfig"))
+            {
+                ReadConfiguration();
+                return;
+            }
 
             bool Run_ThisScript = false;
             if (SelfUpdatingSys_Enabled)
@@ -146,10 +202,7 @@ namespace IngameScript
 
             if (Run_ThisScript)
             {
-
-                string echotext = "\nBattery Status script:\nby Lightwolf\n\nSelf Updating every " + SelfUpSys_perSecond + " Seconds\n";
-
-                Echo(echotext);
+                Echo("\nBattery Status script:\nby Lightwolf\nModified by DMOrigin\n\nSelf Updating every " + SelfUpSys_perSecond + " Seconds\n");
 
                 string batteryStoredUnit = "kWh";
                 bool OnlyNameTag = false;
@@ -202,15 +255,10 @@ namespace IngameScript
                 GridTerminalSystem.GetBlocksOfType<IMyBatteryBlock>(batteryList); //put all Batterys in this list
                 Echo("Batteries: " + batteryList.Count);
 
-                float battery_X_MaxOutput_KW_All = 0f; // create empty Val
-                float battery_X_CurrentOutput_KW_All = 0f; // create empty Val
-                float battery_X_MaxInput_KW_All = 0f; // create empty Val
-                float batt_X_CurrInput_KW_All = 0f; // create empty Val
-                float batt_X_MaxStored_KW_All = 0f; // create empty Val
-                float batX_CurrStored_KW_All = 0f; // create empty Val
+                float BatteryCurrentInputTotal = 0f; // Value in KW
+                float BatteryCurrentStoredTotal = 0f; // value in KW
                 int battAmountActualloop = 0;
                 int battAmountCount = batteryList.Count;
-                float batt_X_CurrentStored_float_X = 0f;
                 bool OnlySmallSigns = false;
 
                 int WideMaxValue = 10;
@@ -239,7 +287,6 @@ namespace IngameScript
                     li165 = pz; li166 = pz; li167 = pz; li168 = pz; li169 = pz; li170 = pz; li171 = pz; li172 = pz; li173 = pz; li174 = pz; li175 = pz; li176 = pz; li177 = pz;
                 }
 
-                //for (int i = 0; i < batteryList.Count; i++)
                 foreach (var battery in batteryList)
                 {
                     OnlyNameTag = false;
@@ -249,40 +296,33 @@ namespace IngameScript
                     }
 
                     // replacement for the string operations
-                    float batterylist_X_MaxOutput_float_X = battery.MaxOutput * 1000f;
-                    float battery_X_MaxInput_float_X = battery.MaxInput * 1000f;
-                    float batt_X_MaxStored_float_X = battery.MaxStoredPower * 1000f;
-                    float batt_X_CurrInput_float_X = battery.CurrentInput * 1000f;
-                    float batListX_CurrOutput_float_X = battery.CurrentOutput * 1000f;
-                    batt_X_CurrentStored_float_X = battery.CurrentStoredPower * 1000f;
+                    float BatteryCurrentInput = battery.CurrentInput * 1000f;
+                    float BatteryCurrentStored = battery.CurrentStoredPower * 1000f;
 
-                    battery_X_MaxOutput_KW_All += batterylist_X_MaxOutput_float_X;
-                    battery_X_MaxInput_KW_All += battery_X_MaxInput_float_X;
-                    batt_X_MaxStored_KW_All += batt_X_MaxStored_float_X;
                     if (OnlyBatteryWithNameTag)
                     {
                         if (OnlyNameTag)
                         {
-                            batt_X_CurrInput_KW_All += batt_X_CurrInput_float_X;
-                            batX_CurrStored_KW_All += batt_X_CurrentStored_float_X;
+                            BatteryCurrentInputTotal += BatteryCurrentInput;
+                            BatteryCurrentStoredTotal += BatteryCurrentStored;
                         }
                     }
                     else
                     {
-                        batt_X_CurrInput_KW_All += batt_X_CurrInput_float_X;
-                        batX_CurrStored_KW_All += batt_X_CurrentStored_float_X;
+                        BatteryCurrentInputTotal += BatteryCurrentInput;
+                        BatteryCurrentStoredTotal += BatteryCurrentStored;
                     }
-                    battery_X_CurrentOutput_KW_All += batListX_CurrOutput_float_X;
 
                     //Get Battery ST in percent
-                    float BatLevel = batt_X_MaxStored_float_X / 6; //Battery Level 1 percent
+                    float BatLevel = (battery.MaxStoredPower * 1000f) / 6; //Battery Level 1 percent
                     float BatLevel_1 = BatLevel; // 1 Bar
                     float BatLevel_2 = BatLevel * 2; // 2 Bar
                     float BatLevel_3 = BatLevel * 3; // 3 Bar
                     float BatLevel_4 = BatLevel * 4; // 4 Bar
                     float BatLevel_5 = BatLevel * 5; // 5 Bar
                     float BatLevel_6 = BatLevel * 6; // 6 Bar
-                                                        //BatteST Val empty
+
+                    //BatteST Val empty
                     string Py = P17;
                     string BB_Gr = ""; string BB_Cyan = ""; string BB_Ye = ""; string BB_Or = ""; string BB_Re = "";
 
@@ -296,11 +336,11 @@ namespace IngameScript
                     bool batt_IsCharging = false;
                     bool batt_OnlyRecharge = false;
                     bool batt_OnlyDischarge = false;
-                    bool batt_IsOff = false;
+                    bool batt_IsEnabled = false;
 
                     if (battery.Enabled)
                     {
-                        batt_IsOff = true;
+                        batt_IsEnabled = true;
                         if (battery.IsFunctional)
                         {
                             if (battery.IsWorking)
@@ -337,7 +377,7 @@ namespace IngameScript
                     }
                     else if (batt_OnlyDischarge) { Level_on = true; }
                     //if batt Offline
-                    else if (!batt_IsOff) { Level_on = true; }
+                    else if (!batt_IsEnabled) { Level_on = true; }
                     //if batt Not Functional
                     else if (!batt_IsFunctional)
                     {
@@ -362,7 +402,7 @@ namespace IngameScript
                     {
                         if (Level_on)
                         {
-                            if (batt_X_CurrentStored_float_X >= BatLevel_6)
+                            if (BatteryCurrentStored >= BatLevel_6)
                             {
                                 if (OnlySmallSigns)
                                 {
@@ -379,7 +419,7 @@ namespace IngameScript
                                     BBST36 = BB_Gr; BBST37 = BB_Gr; BBST38 = BB_Gr; BBST39 = BB_Gr;
                                 }
                             }
-                            else if (batt_X_CurrentStored_float_X >= BatLevel_5)
+                            else if (BatteryCurrentStored >= BatLevel_5)
                             {
                                 if (OnlySmallSigns)
                                 {
@@ -395,7 +435,7 @@ namespace IngameScript
                                     BBST36 = BB_Cyan; BBST37 = BB_Cyan; BBST38 = BB_Cyan; BBST39 = BB_Cyan;
                                 }
                             }
-                            else if (batt_X_CurrentStored_float_X >= BatLevel_4)
+                            else if (BatteryCurrentStored >= BatLevel_4)
                             {
                                 if (OnlySmallSigns)
                                 {
@@ -410,7 +450,7 @@ namespace IngameScript
                                     BBST36 = BB_Cyan; BBST37 = BB_Cyan; BBST38 = BB_Cyan; BBST39 = BB_Cyan;
                                 }
                             }
-                            else if (batt_X_CurrentStored_float_X >= BatLevel_3)
+                            else if (BatteryCurrentStored >= BatLevel_3)
                             {
                                 if (OnlySmallSigns)
                                 {
@@ -424,7 +464,7 @@ namespace IngameScript
                                     BBST36 = BB_Cyan; BBST37 = BB_Cyan; BBST38 = BB_Cyan; BBST39 = BB_Cyan;
                                 }
                             }
-                            else if (batt_X_CurrentStored_float_X >= BatLevel_2)
+                            else if (BatteryCurrentStored >= BatLevel_2)
                             {
                                 if (OnlySmallSigns)
                                 {
@@ -437,7 +477,7 @@ namespace IngameScript
                                     BBST36 = BB_Cyan; BBST37 = BB_Cyan; BBST38 = BB_Cyan; BBST39 = BB_Cyan;
                                 }
                             }
-                            else if (batt_X_CurrentStored_float_X >= BatLevel_1)
+                            else if (BatteryCurrentStored >= BatLevel_1)
                             {
                                 if (OnlySmallSigns)
                                 {
@@ -632,7 +672,7 @@ namespace IngameScript
                                 liX080 += Px + BR_080; liX081 += Px + BR_081; liX082 += Px + BR_082; liX083 += Px + BR_083; liX084 += Px + BR_084; liX085 += Px + BR_085; liX086 += Px + BR_086; liX087 += Px + BR_087; liX088 += Px + BR_088;
                             }
                         }
-                        else if (!batt_IsOff)
+                        else if (!batt_IsEnabled)
                         {
                             //if batt OffliX
                             if (OnlySmallSigns) { Px = P4; }
@@ -884,7 +924,7 @@ namespace IngameScript
                         PG_ST_029 = "" + PG_Off_029 + "";
                         PG_ST_030 = "";
                     }
-                    if (GenSol_CurrentOutput < batt_X_CurrInput_KW_All)
+                    if (GenSol_CurrentOutput < BatteryCurrentInputTotal)
                     {   //if needed input is lower then actual input
                         PG_ST_018 = "";
                         PG_ST_019 = "" + PG_L_019 + "";
@@ -973,11 +1013,11 @@ namespace IngameScript
                 int CounterNumConvert = 2;
                 int CheckerNumConvert = CounterNumConvert;
 
-                if (batX_CurrStored_KW_All > 999999) { batX_CurrStored_KW_All = batX_CurrStored_KW_All / 1000000; batteryStoredUnit = "GWh"; }
-                else if (batX_CurrStored_KW_All > 999) { batX_CurrStored_KW_All = batX_CurrStored_KW_All / 1000; batteryStoredUnit = "MWh"; }
-                else if (batX_CurrStored_KW_All < 1) { batX_CurrStored_KW_All = batX_CurrStored_KW_All * 1000; batteryStoredUnit = "Wh"; }
+                if (BatteryCurrentStoredTotal > 999999) { BatteryCurrentStoredTotal = BatteryCurrentStoredTotal / 1000000; batteryStoredUnit = "GWh"; }
+                else if (BatteryCurrentStoredTotal > 999) { BatteryCurrentStoredTotal = BatteryCurrentStoredTotal / 1000; batteryStoredUnit = "MWh"; }
+                else if (BatteryCurrentStoredTotal < 1) { BatteryCurrentStoredTotal = BatteryCurrentStoredTotal * 1000; batteryStoredUnit = "Wh"; }
 
-                int numVal = Convert.ToInt32(batX_CurrStored_KW_All);
+                int numVal = Convert.ToInt32(BatteryCurrentStoredTotal);
 
                 for (int i = 0; i < CounterNumConvert; i++)
                 {   // Here set your Number to split
@@ -1149,7 +1189,7 @@ namespace IngameScript
                         else if (Chk_State == 3) { Chk_Num_ShwPx = true; }
                         else if (Chk_State == 2)
                         {
-                            if (batX_CurrStored_KW_All < 10) { Chk_Num_ShwPx = true; }
+                            if (BatteryCurrentStoredTotal < 10) { Chk_Num_ShwPx = true; }
                         }
                         if (Chk_Num_ShwPx)
                         {
@@ -1380,20 +1420,20 @@ namespace IngameScript
                 string str_AllBoundlis_001_To_178 = str_Boundli_001_To_010 + str_Boundli_011_To_020 + str_Boundli_021_To_030 + str_Boundli_031_To_040 + str_Boundli_041_To_050 + str_Boundli_051_To_060 + str_Boundli_061_To_070 + str_Boundli_071_To_080 + str_Boundli_081_To_090 + str_Boundli_091_To_100 + str_Boundli_101_To_110 + str_Boundli_111_To_120 + str_Boundli_121_To_130 + str_Boundli_131_To_140 + str_Boundli_141_To_150 + str_Boundli_151_To_160 + str_Boundli_161_To_170 + str_Boundli_171_To_178;
 
                 // find all LCD with NameTag
-                var BBS_TextPanels = new List<IMyTerminalBlock>();
-                GridTerminalSystem.SearchBlocksOfName(LCD_NameTag, BBS_TextPanels);
+                var LCDPanels = new List<IMyTerminalBlock>();
+                GridTerminalSystem.SearchBlocksOfName(LCDNameTag, LCDPanels);
+                Echo("Displays: " + LCDPanels.Count);
 
                 // this loop send Message to show to all found Lcds
-                foreach(var TerminalBlock in BBS_TextPanels)
+                foreach(var TerminalBlock in LCDPanels)
                 {
-                    var BSS_TextPanel = TerminalBlock as IMyTextPanel;
+                    var LCDPanel = TerminalBlock as IMyTextPanel;
 
-                    BSS_TextPanel.SetValue("FontColor", new Color(LCDbright, LCDbright, LCDbright)); // White
-                    BSS_TextPanel.SetValue("FontSize", 0.10f);    // set Font size of your LCD
-                    BSS_TextPanel.SetValue("Font", (long)1147350002);
-                    BSS_TextPanel.ShowPublicTextOnScreen();
-                    //BatteryStatus_Lcd_X.WritePublicText("", false);
-                    BSS_TextPanel.WritePublicText("" + str_AllBoundlis_001_To_178, false);
+                    LCDPanel.SetValue("FontColor", new Color(LCDBrightness, LCDBrightness, LCDBrightness)); // White
+                    LCDPanel.SetValue("FontSize", 0.10f);    // set Font size of your LCD
+                    LCDPanel.SetValue("Font", (long)1147350002);
+                    LCDPanel.ShowPublicTextOnScreen();
+                    LCDPanel.WritePublicText("" + str_AllBoundlis_001_To_178, false);
                 }
             }
         } // End of Main script
