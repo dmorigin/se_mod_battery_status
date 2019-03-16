@@ -69,6 +69,29 @@ will be shown.
 #### Section "system"
 - **UpdatingEnabled** *[true|false]*: If this is set to true the script will be updates automaticaly.
 - **UpdateInterval** *[1...n]*: Value is in seconds. Set this value to specify the time between updates.
+- **CheckOnlyLocalGrid** *[true|false]*: If true all connected grids will be ignored. Default is false.
+
+### Configuration examples
+
+The following examples shows you a basic configuration that is used in the most cases:
+```
+[lcd]
+NameTag=[BatteryStatus]
+
+[battery]
+NameTag=[Status]
+OnlyWithNameTag=true
+```
+
+The second example shows you a configuration with a widescreen panel and where only the grid of the programmable block will be checked.
+```
+[lcd]
+NameTag=[BatteryStatus]
+Widescreen=true
+
+[system]
+CheckOnlyLocalGrid=true
+```
 
 ## Remarks
 
