@@ -151,17 +151,11 @@ BatteryAllStoredEnergyEnabled = GetConfigBool(parser, "display", "ShowTotalStore
 
 private bool BatteryFilterCallback(IMyTerminalBlock block)
 {
-if (CheckOnlyLocalGrid_Enabled)
-{
-if (block.CubeGrid != Me.CubeGrid)
+if (CheckOnlyLocalGrid_Enabled && block.CubeGrid != Me.CubeGrid)
 return false;
-}
 
-if (OnlyBatteryWithNameTag)
-{
-if (!block.CustomName.Contains(BatteryNameTag))
+if (OnlyBatteryWithNameTag && !block.CustomName.Contains(BatteryNameTag))
 return false;
-}
 
 return true;
 }
@@ -1387,9 +1381,13 @@ string str_AllBoundlis_001_To_178 = str_Boundli_001_To_010 + str_Boundli_011_To_
 
 // find all LCD with NameTag
 var LCDPanels = new List<IMyTextPanel>();
-GridTerminalSystem.GetBlocksOfType<IMyTextPanel>(LCDPanels, blocks => {
-if (blocks.CustomName.Contains(LCDNameTag))
+GridTerminalSystem.GetBlocksOfType<IMyTextPanel>(LCDPanels, block => {
+if (block.CustomName.Contains(LCDNameTag))
+{
+if (CheckOnlyLocalGrid_Enabled && block.CubeGrid != Me.CubeGrid)
+return false;
 return true;
+}
 return false;
 });
 Echo("Displays: " + LCDPanels.Count);
