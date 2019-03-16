@@ -4,7 +4,7 @@
 <mdk version="1.1.30">
   <gamebinpath enabled="no">e:\steam\SteamApps\common\SpaceEngineers\Bin64</gamebinpath>
   <installpath>c:\users\dragonmaster\appdata\local\microsoft\visualstudio\15.0_88c327cc\extensions\t1yd3nbp.gam</installpath>
-  <outputpath>D:\Development\Games\Space Engineers Mods\Outputs</outputpath>
+  <outputpath>%AppData%\SpaceEngineers\IngameScripts\local</outputpath>
   <trimtypes>no</trimtypes>
   <minify>yes</minify>
   <ignore>

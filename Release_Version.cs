@@ -15,10 +15,6 @@ Just edit your options, and it you will able to overwatch up to 100 Battery's ve
 
 //-----   Battery Settings    -----
 
-// LCD / Text Panel to show status
-// All LCD with a specific NameTag included in their name, will be show the information. You can edit the NameTag here.
-string LCDNameTag = "[Battery Status LCD]"; //example: my LCD 31 [Battery Status LCD]
-
 // NameTags Specific Blocks
 // on default this script search for all Battery's attached, and show there Status, but somethimes you want be able to
 // show only specific Battery's, then set OnlyBatteryWithNameTag to true.
@@ -29,6 +25,10 @@ bool OnlyBatteryWithNameTag = false; //false	= show all found Battery's attached
 string BatteryNameTag = "[Battery-Status]"; // NameTag to show only specific Battery's, example: my Battery 15 [Battery-Status]
 
 //-----   LCD Settings    -----
+
+// LCD / Text Panel to show status
+// All LCD with a specific NameTag included in their name, will be show the information. You can edit the NameTag here.
+string LCDNameTag = "[Battery Status LCD]"; //example: my LCD 31 [Battery Status LCD]
 
 // Wide LCD or LCD
 // on default it shows a total amount of max. 50 Battery's. There's a option to show a total amount of 100 Battery's, but this only works for wide LCDs,
@@ -48,6 +48,10 @@ bool SelfUpdatingSys_Enabled = true; // false = Off, true = after compile script
 
 //if Self updating System enabled you can choose how many times per second the script will be activated
 int SelfUpSys_perSecond = 2; // 1 = 1 sec, 2 = 2 sec etc.
+
+// If set to true the script will ignore all connected grids. the default is false, because of the
+// original script didn't check that.
+bool CheckOnlyLocalGrid_Enabled = false;
 
 //-----   Display Settings    -----
 
@@ -132,6 +136,7 @@ LCDBrightness = GetConfigInteger(parser, "lcd", "Brightness", 255);
 // system settings
 SelfUpdatingSys_Enabled = GetConfigBool(parser, "system", "UpdatingEnabled", true);
 SelfUpSys_perSecond = GetConfigInteger(parser, "system", "UpdateInterval", 2);
+CheckOnlyLocalGrid_Enabled = GetConfigBool(parser, "system", "CheckOnlyLocalGrid", false);
 
 // display settings
 OnlySmallSigns_Enabled = GetConfigBool(parser, "display", "OnlySmallSigns", false);
@@ -142,6 +147,23 @@ BatSpaceline_Enabled = GetConfigBool(parser, "display", "ShowSeperatorInStatus",
 BatteryAmountEnabled = GetConfigBool(parser, "display", "ShowBatteryAmount", true);
 BatteryAllStoredEnergyEnabled = GetConfigBool(parser, "display", "ShowTotalStoredPower", true);
 }
+}
+
+private bool BatteryFilterCallback(IMyTerminalBlock block)
+{
+if (CheckOnlyLocalGrid_Enabled)
+{
+if (block.CubeGrid != Me.CubeGrid)
+return false;
+}
+
+if (OnlyBatteryWithNameTag)
+{
+if (!block.CustomName.Contains(BatteryNameTag))
+return false;
+}
+
+return true;
 }
 
 public Program()
@@ -192,7 +214,7 @@ if (Run_ThisScript)
 Echo("\nBattery Status script:\nby Lightwolf\nModified by DMOrigin\n\nSelf Updating every " + SelfUpSys_perSecond + " Seconds\n");
 
 PowerMetricUnit BatteryStoredUnit = PowerMetricUnit.kWh;
-bool OnlyNameTag = false;
+//bool OnlyNameTag = false;
 
 //Pixel Tempelates
 string P1 = "";
@@ -239,7 +261,7 @@ string li170 = ""; string li171 = ""; string li172 = ""; string li173 = ""; stri
 
 // Create list with all Batterys attached/added
 var BatteryList = new List<IMyBatteryBlock>(); //create new empty list
-GridTerminalSystem.GetBlocksOfType<IMyBatteryBlock>(BatteryList); //put all Batterys in this list
+GridTerminalSystem.GetBlocksOfType<IMyBatteryBlock>(BatteryList, BatteryFilterCallback); //put all Batterys in this list
 Echo("Batteries: " + BatteryList.Count);
 
 float BatteryCurrentInputTotal = 0f; // Value in KW
@@ -276,29 +298,13 @@ li165 = pz; li166 = pz; li167 = pz; li168 = pz; li169 = pz; li170 = pz; li171 = 
 
 foreach (var Battery in BatteryList)
 {
-OnlyNameTag = false;
-if (OnlyBatteryWithNameTag)
-{
-if (Battery.CustomName.Contains(BatteryNameTag)) { OnlyNameTag = true; }
-}
+BatteryLoopCounter += 1;
 
 // replacement for the string operations
-float BatteryCurrentInput = Battery.CurrentInput * 1000f;
 float BatteryCurrentStored = Battery.CurrentStoredPower * 1000f;
 
-if (OnlyBatteryWithNameTag)
-{
-if (OnlyNameTag)
-{
-BatteryCurrentInputTotal += BatteryCurrentInput;
+BatteryCurrentInputTotal += Battery.CurrentInput * 1000f;
 BatteryCurrentStoredTotal += BatteryCurrentStored;
-}
-}
-else
-{
-BatteryCurrentInputTotal += BatteryCurrentInput;
-BatteryCurrentStoredTotal += BatteryCurrentStored;
-}
 
 //Get Battery ST in percent
 float BatLevel = (Battery.MaxStoredPower * 1000f) / 6; //Battery Level 1 percent
@@ -590,22 +596,7 @@ string liX080 = ""; string liX081 = ""; string liX082 = ""; string liX083 = ""; 
 
 string Px = "";
 bool Cyan_on = false;
-bool CheckToShow = false;
 
-if (OnlyBatteryWithNameTag)
-{
-if (OnlyNameTag)
-{
-CheckToShow = true;
-}
-}
-else
-{
-CheckToShow = true;
-}
-
-if (CheckToShow)
-{
 //if batt Charging
 if (BatteryIsCharging)
 {
@@ -696,8 +687,7 @@ liX070 += Px + BC_070; liX071 += Px + BC_071; liX072 += Px + BC_072; liX073 += P
 liX080 += Px + BC_080; liX081 += Px + BC_081; liX082 += Px + BC_082; liX083 += Px + BC_083; liX084 += Px + BC_084; liX085 += Px + BC_085; liX086 += Px + BC_086; liX087 += Px + BC_087; liX088 += Px + BC_088;
 }
 }
-BatteryLoopCounter += 1;
-}
+
 int Am50_10To20 = 0;
 int Am50_20To40 = 0;
 int Am50_30To60 = 0;
@@ -1396,15 +1386,17 @@ string str_Boundli_171_To_178 = li171 + Breakli + li172 + Breakli + li173 + Brea
 string str_AllBoundlis_001_To_178 = str_Boundli_001_To_010 + str_Boundli_011_To_020 + str_Boundli_021_To_030 + str_Boundli_031_To_040 + str_Boundli_041_To_050 + str_Boundli_051_To_060 + str_Boundli_061_To_070 + str_Boundli_071_To_080 + str_Boundli_081_To_090 + str_Boundli_091_To_100 + str_Boundli_101_To_110 + str_Boundli_111_To_120 + str_Boundli_121_To_130 + str_Boundli_131_To_140 + str_Boundli_141_To_150 + str_Boundli_151_To_160 + str_Boundli_161_To_170 + str_Boundli_171_To_178;
 
 // find all LCD with NameTag
-var LCDPanels = new List<IMyTerminalBlock>();
-GridTerminalSystem.SearchBlocksOfName(LCDNameTag, LCDPanels);
+var LCDPanels = new List<IMyTextPanel>();
+GridTerminalSystem.GetBlocksOfType<IMyTextPanel>(LCDPanels, blocks => {
+if (blocks.CustomName.Contains(LCDNameTag))
+return true;
+return false;
+});
 Echo("Displays: " + LCDPanels.Count);
 
 // this loop send Message to show to all found Lcds
-foreach(var TerminalBlock in LCDPanels)
+foreach(var LCDPanel in LCDPanels)
 {
-var LCDPanel = TerminalBlock as IMyTextPanel;
-
 LCDPanel.SetValue("FontColor", new Color(LCDBrightness, LCDBrightness, LCDBrightness)); // White
 LCDPanel.SetValue("FontSize", 0.10f);    // set Font size of your LCD
 LCDPanel.SetValue("Font", (long)1147350002);

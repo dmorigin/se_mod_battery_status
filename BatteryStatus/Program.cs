@@ -36,10 +36,6 @@ namespace IngameScript
 
         //-----   Battery Settings    -----
 
-        // LCD / Text Panel to show status
-        // All LCD with a specific NameTag included in their name, will be show the information. You can edit the NameTag here.
-        string LCDNameTag = "[Battery Status LCD]"; //example: my LCD 31 [Battery Status LCD]
-
         // NameTags Specific Blocks
         // on default this script search for all Battery's attached, and show there Status, but somethimes you want be able to
         // show only specific Battery's, then set OnlyBatteryWithNameTag to true.
@@ -50,6 +46,10 @@ namespace IngameScript
         string BatteryNameTag = "[Battery-Status]"; // NameTag to show only specific Battery's, example: my Battery 15 [Battery-Status]
 
         //-----   LCD Settings    -----
+
+        // LCD / Text Panel to show status
+        // All LCD with a specific NameTag included in their name, will be show the information. You can edit the NameTag here.
+        string LCDNameTag = "[Battery Status LCD]"; //example: my LCD 31 [Battery Status LCD]
 
         // Wide LCD or LCD
         // on default it shows a total amount of max. 50 Battery's. There's a option to show a total amount of 100 Battery's, but this only works for wide LCDs,
@@ -69,6 +69,10 @@ namespace IngameScript
 
         //if Self updating System enabled you can choose how many times per second the script will be activated
         int SelfUpSys_perSecond = 2; // 1 = 1 sec, 2 = 2 sec etc.
+
+        // If set to true the script will ignore all connected grids. the default is false, because of the
+        // original script didn't check that.
+        bool CheckOnlyLocalGrid_Enabled = false;
 
         //-----   Display Settings    -----
 
@@ -153,6 +157,7 @@ namespace IngameScript
                 // system settings
                 SelfUpdatingSys_Enabled = GetConfigBool(parser, "system", "UpdatingEnabled", true);
                 SelfUpSys_perSecond = GetConfigInteger(parser, "system", "UpdateInterval", 2);
+                CheckOnlyLocalGrid_Enabled = GetConfigBool(parser, "system", "CheckOnlyLocalGrid", false);
 
                 // display settings
                 OnlySmallSigns_Enabled = GetConfigBool(parser, "display", "OnlySmallSigns", false);
@@ -163,6 +168,23 @@ namespace IngameScript
                 BatteryAmountEnabled = GetConfigBool(parser, "display", "ShowBatteryAmount", true);
                 BatteryAllStoredEnergyEnabled = GetConfigBool(parser, "display", "ShowTotalStoredPower", true);
             }
+        }
+
+        private bool BatteryFilterCallback(IMyTerminalBlock block)
+        {
+            if (CheckOnlyLocalGrid_Enabled)
+            {
+                if (block.CubeGrid != Me.CubeGrid)
+                    return false;
+            }
+
+            if (OnlyBatteryWithNameTag)
+            {
+                if (!block.CustomName.Contains(BatteryNameTag))
+                    return false;
+            }
+
+            return true;
         }
 
         public Program()
@@ -213,7 +235,7 @@ namespace IngameScript
                 Echo("\nBattery Status script:\nby Lightwolf\nModified by DMOrigin\n\nSelf Updating every " + SelfUpSys_perSecond + " Seconds\n");
 
                 PowerMetricUnit BatteryStoredUnit = PowerMetricUnit.kWh;
-                bool OnlyNameTag = false;
+                //bool OnlyNameTag = false;
 
                 //Pixel Tempelates
                 string P1 = "";
@@ -260,7 +282,7 @@ namespace IngameScript
 
                 // Create list with all Batterys attached/added
                 var BatteryList = new List<IMyBatteryBlock>(); //create new empty list
-                GridTerminalSystem.GetBlocksOfType<IMyBatteryBlock>(BatteryList); //put all Batterys in this list
+                GridTerminalSystem.GetBlocksOfType<IMyBatteryBlock>(BatteryList, BatteryFilterCallback); //put all Batterys in this list
                 Echo("Batteries: " + BatteryList.Count);
 
                 float BatteryCurrentInputTotal = 0f; // Value in KW
@@ -297,29 +319,13 @@ namespace IngameScript
 
                 foreach (var Battery in BatteryList)
                 {
-                    OnlyNameTag = false;
-                    if (OnlyBatteryWithNameTag)
-                    {
-                        if (Battery.CustomName.Contains(BatteryNameTag)) { OnlyNameTag = true; }
-                    }
+                    BatteryLoopCounter += 1;
 
                     // replacement for the string operations
-                    float BatteryCurrentInput = Battery.CurrentInput * 1000f;
                     float BatteryCurrentStored = Battery.CurrentStoredPower * 1000f;
 
-                    if (OnlyBatteryWithNameTag)
-                    {
-                        if (OnlyNameTag)
-                        {
-                            BatteryCurrentInputTotal += BatteryCurrentInput;
-                            BatteryCurrentStoredTotal += BatteryCurrentStored;
-                        }
-                    }
-                    else
-                    {
-                        BatteryCurrentInputTotal += BatteryCurrentInput;
-                        BatteryCurrentStoredTotal += BatteryCurrentStored;
-                    }
+                    BatteryCurrentInputTotal += Battery.CurrentInput * 1000f;
+                    BatteryCurrentStoredTotal += BatteryCurrentStored;
 
                     //Get Battery ST in percent
                     float BatLevel = (Battery.MaxStoredPower * 1000f) / 6; //Battery Level 1 percent
@@ -611,114 +617,98 @@ namespace IngameScript
 
                     string Px = "";
                     bool Cyan_on = false;
-                    bool CheckToShow = false;
 
-                    if (OnlyBatteryWithNameTag)
+                    //if batt Charging
+                    if (BatteryIsCharging)
                     {
-                        if (OnlyNameTag)
+                        Cyan_on = true;
+                    }
+                    else if (BatteryOnlyRecharge)
+                    {
+                        //if batt OnlyRecharge
+                        if (OnlySmallSigns) { Px = P4; }
+                        else { Px = P7; }
+                        liX037 += Px + Bo_037; liX038 += Px + Bo_038; liX039 += Px + Bo_039; liX040 += Px + Bo_040; liX041 += Px + Bo_041; liX042 += Px + Bo_042; liX043 += Px + Bo_043;
+                        liX044 += Px + Bo_044; liX045 += Px + Bo_045; liX046 += Px + Bo_046; liX047 += Px + Bo_047; liX048 += Px + Bo_048; liX049 += Px + Bo_049; liX050 += Px + Bo_050;
+                        liX051 += Px + Bo_051; liX052 += Px + Bo_052; liX053 += Px + Bo_053; liX054 += Px + Bo_054; liX055 += Px + Bo_055; liX056 += Px + Bo_056; liX057 += Px + Bo_057;
+                        liX058 += Px + Bo_058; liX059 += Px + Bo_059; liX060 += Px + Bo_060; liX061 += Px + Bo_061; liX062 += Px + Bo_062; liX063 += Px + Bo_063;
+                        if (BatteryAmountCount < WideMinValue)
                         {
-                            CheckToShow = true;
+                            liX064 += Px + Bo_064; liX065 += Px + Bo_065; liX066 += Px + Bo_066; liX067 += Px + Bo_067; liX068 += Px + Bo_068; liX069 += Px + Bo_069;
+                            liX070 += Px + Bo_070; liX071 += Px + Bo_071; liX072 += Px + Bo_072; liX073 += Px + Bo_073; liX074 += Px + Bo_074; liX075 += Px + Bo_075; liX076 += Px + Bo_076; liX077 += Px + Bo_077; liX078 += Px + Bo_078; liX079 += Px + Bo_079;
+                            liX080 += Px + Bo_080; liX081 += Px + Bo_081; liX082 += Px + Bo_082; liX083 += Px + Bo_083; liX084 += Px + Bo_084; liX085 += Px + Bo_085; liX086 += Px + Bo_086; liX087 += Px + Bo_087; liX088 += Px + Bo_088;
+                        }
+                    }
+                    else if (BatteryOnlyDischarge)
+                    {
+                        //if batt OnlyDischarge
+                        if (OnlySmallSigns) { Px = P4; }
+                        else { Px = P7; }
+                        liX037 += Px + BG_037; liX038 += Px + BG_038; liX039 += Px + BG_039; liX040 += Px + BG_040; liX041 += Px + BG_041; liX042 += Px + BG_042; liX043 += Px + BG_043;
+                        liX044 += Px + BG_044; liX045 += Px + BG_045; liX046 += Px + BG_046; liX047 += Px + BG_047; liX048 += Px + BG_048; liX049 += Px + BG_049; liX050 += Px + BG_050;
+                        liX051 += Px + BG_051; liX052 += Px + BG_052; liX053 += Px + BG_053; liX054 += Px + BG_054; liX055 += Px + BG_055; liX056 += Px + BG_056; liX057 += Px + BG_057;
+                        liX058 += Px + BG_058; liX059 += Px + BG_059; liX060 += Px + BG_060; liX061 += Px + BG_061; liX062 += Px + BG_062; liX063 += Px + BG_063;
+                        if (BatteryAmountCount < WideMinValue)
+                        {
+                            liX064 += Px + BG_064; liX065 += Px + BG_065; liX066 += Px + BG_066; liX067 += Px + BG_067; liX068 += Px + BG_068; liX069 += Px + BG_069;
+                            liX070 += Px + BG_070; liX071 += Px + BG_071; liX072 += Px + BG_072; liX073 += Px + BG_073; liX074 += Px + BG_074; liX075 += Px + BG_075; liX076 += Px + BG_076; liX077 += Px + BG_077; liX078 += Px + BG_078; liX079 += Px + BG_079;
+                            liX080 += Px + BG_080; liX081 += Px + BG_081; liX082 += Px + BG_082; liX083 += Px + BG_083; liX084 += Px + BG_084; liX085 += Px + BG_085; liX086 += Px + BG_086; liX087 += Px + BG_087; liX088 += Px + BG_088;
+                        }
+                    }
+                    else if (!BatteryIsFunctional)
+                    {
+                        //if batt Not Functional
+                        if (OnlySmallSigns) { Px = P4; }
+                        else { Px = P7; }
+                        liX037 += Px + BR_037; liX038 += Px + BR_038; liX039 += Px + BR_039; liX040 += Px + BR_040; liX041 += Px + BR_041; liX042 += Px + BR_042; liX043 += Px + BR_043;
+                        liX044 += Px + BR_044; liX045 += Px + BR_045; liX046 += Px + BR_046; liX047 += Px + BR_047; liX048 += Px + BR_048; liX049 += Px + BR_049; liX050 += Px + BR_050;
+                        liX051 += Px + BR_051; liX052 += Px + BR_052; liX053 += Px + BR_053; liX054 += Px + BR_054; liX055 += Px + BR_055; liX056 += Px + BR_056; liX057 += Px + BR_057;
+                        liX058 += Px + BR_058; liX059 += Px + BR_059; liX060 += Px + BR_060; liX061 += Px + BR_061; liX062 += Px + BR_062; liX063 += Px + BR_063;
+                        if (BatteryAmountCount < WideMinValue)
+                        {
+                            liX064 += Px + BR_064; liX065 += Px + BR_065; liX066 += Px + BR_066; liX067 += Px + BR_067; liX068 += Px + BR_068; liX069 += Px + BR_069;
+                            liX070 += Px + BR_070; liX071 += Px + BR_071; liX072 += Px + BR_072; liX073 += Px + BR_073; liX074 += Px + BR_074; liX075 += Px + BR_075; liX076 += Px + BR_076; liX077 += Px + BR_077; liX078 += Px + BR_078; liX079 += Px + BR_079;
+                            liX080 += Px + BR_080; liX081 += Px + BR_081; liX082 += Px + BR_082; liX083 += Px + BR_083; liX084 += Px + BR_084; liX085 += Px + BR_085; liX086 += Px + BR_086; liX087 += Px + BR_087; liX088 += Px + BR_088;
+                        }
+                    }
+                    else if (!BatteryIsEnabled)
+                    {
+                        //if batt OffliX
+                        if (OnlySmallSigns) { Px = P4; }
+                        else { Px = P7; }
+                        liX037 += Px + BR_037; liX038 += Px + BR_038; liX039 += Px + BR_039; liX040 += Px + BR_040; liX041 += Px + BR_041; liX042 += Px + BR_042; liX043 += Px + BR_043;
+                        liX044 += Px + BR_044; liX045 += Px + BR_045; liX046 += Px + BR_046; liX047 += Px + BR_047; liX048 += Px + BR_048; liX049 += Px + BR_049; liX050 += Px + BR_050;
+                        liX051 += Px + BR_051; liX052 += Px + BR_052; liX053 += Px + BR_053; liX054 += Px + BR_054; liX055 += Px + BR_055; liX056 += Px + BR_056; liX057 += Px + BR_057;
+                        liX058 += Px + BR_058; liX059 += Px + BR_059; liX060 += Px + BR_060; liX061 += Px + BR_061; liX062 += Px + BR_062; liX063 += Px + BR_063;
+                        if (BatteryAmountCount < WideMinValue)
+                        {
+                            liX064 += Px + BR_064; liX065 += Px + BR_065; liX066 += Px + BR_066; liX067 += Px + BR_067; liX068 += Px + BR_068; liX069 += Px + BR_069;
+                            liX070 += Px + BR_070; liX071 += Px + BR_071; liX072 += Px + BR_072; liX073 += Px + BR_073; liX074 += Px + BR_074; liX075 += Px + BR_075; liX076 += Px + BR_076; liX077 += Px + BR_077; liX078 += Px + BR_078; liX079 += Px + BR_079;
+                            liX080 += Px + BR_080; liX081 += Px + BR_081; liX082 += Px + BR_082; liX083 += Px + BR_083; liX084 += Px + BR_084; liX085 += Px + BR_085; liX086 += Px + BR_086; liX087 += Px + BR_087; liX088 += Px + BR_088;
                         }
                     }
                     else
                     {
-                        CheckToShow = true;
+                        Cyan_on = true;
                     }
 
-                    if (CheckToShow)
+                    if (Cyan_on)
                     {
-                        //if batt Charging
-                        if (BatteryIsCharging)
-                        {
-                            Cyan_on = true;
-                        }
-                        else if (BatteryOnlyRecharge)
-                        {
-                            //if batt OnlyRecharge
-                            if (OnlySmallSigns) { Px = P4; }
-                            else { Px = P7; }
-                            liX037 += Px + Bo_037; liX038 += Px + Bo_038; liX039 += Px + Bo_039; liX040 += Px + Bo_040; liX041 += Px + Bo_041; liX042 += Px + Bo_042; liX043 += Px + Bo_043;
-                            liX044 += Px + Bo_044; liX045 += Px + Bo_045; liX046 += Px + Bo_046; liX047 += Px + Bo_047; liX048 += Px + Bo_048; liX049 += Px + Bo_049; liX050 += Px + Bo_050;
-                            liX051 += Px + Bo_051; liX052 += Px + Bo_052; liX053 += Px + Bo_053; liX054 += Px + Bo_054; liX055 += Px + Bo_055; liX056 += Px + Bo_056; liX057 += Px + Bo_057;
-                            liX058 += Px + Bo_058; liX059 += Px + Bo_059; liX060 += Px + Bo_060; liX061 += Px + Bo_061; liX062 += Px + Bo_062; liX063 += Px + Bo_063;
-                            if (BatteryAmountCount < WideMinValue)
-                            {
-                                liX064 += Px + Bo_064; liX065 += Px + Bo_065; liX066 += Px + Bo_066; liX067 += Px + Bo_067; liX068 += Px + Bo_068; liX069 += Px + Bo_069;
-                                liX070 += Px + Bo_070; liX071 += Px + Bo_071; liX072 += Px + Bo_072; liX073 += Px + Bo_073; liX074 += Px + Bo_074; liX075 += Px + Bo_075; liX076 += Px + Bo_076; liX077 += Px + Bo_077; liX078 += Px + Bo_078; liX079 += Px + Bo_079;
-                                liX080 += Px + Bo_080; liX081 += Px + Bo_081; liX082 += Px + Bo_082; liX083 += Px + Bo_083; liX084 += Px + Bo_084; liX085 += Px + Bo_085; liX086 += Px + Bo_086; liX087 += Px + Bo_087; liX088 += Px + Bo_088;
-                            }
-                        }
-                        else if (BatteryOnlyDischarge)
-                        {
-                            //if batt OnlyDischarge
-                            if (OnlySmallSigns) { Px = P4; }
-                            else { Px = P7; }
-                            liX037 += Px + BG_037; liX038 += Px + BG_038; liX039 += Px + BG_039; liX040 += Px + BG_040; liX041 += Px + BG_041; liX042 += Px + BG_042; liX043 += Px + BG_043;
-                            liX044 += Px + BG_044; liX045 += Px + BG_045; liX046 += Px + BG_046; liX047 += Px + BG_047; liX048 += Px + BG_048; liX049 += Px + BG_049; liX050 += Px + BG_050;
-                            liX051 += Px + BG_051; liX052 += Px + BG_052; liX053 += Px + BG_053; liX054 += Px + BG_054; liX055 += Px + BG_055; liX056 += Px + BG_056; liX057 += Px + BG_057;
-                            liX058 += Px + BG_058; liX059 += Px + BG_059; liX060 += Px + BG_060; liX061 += Px + BG_061; liX062 += Px + BG_062; liX063 += Px + BG_063;
-                            if (BatteryAmountCount < WideMinValue)
-                            {
-                                liX064 += Px + BG_064; liX065 += Px + BG_065; liX066 += Px + BG_066; liX067 += Px + BG_067; liX068 += Px + BG_068; liX069 += Px + BG_069;
-                                liX070 += Px + BG_070; liX071 += Px + BG_071; liX072 += Px + BG_072; liX073 += Px + BG_073; liX074 += Px + BG_074; liX075 += Px + BG_075; liX076 += Px + BG_076; liX077 += Px + BG_077; liX078 += Px + BG_078; liX079 += Px + BG_079;
-                                liX080 += Px + BG_080; liX081 += Px + BG_081; liX082 += Px + BG_082; liX083 += Px + BG_083; liX084 += Px + BG_084; liX085 += Px + BG_085; liX086 += Px + BG_086; liX087 += Px + BG_087; liX088 += Px + BG_088;
-                            }
-                        }
-                        else if (!BatteryIsFunctional)
-                        {
-                            //if batt Not Functional
-                            if (OnlySmallSigns) { Px = P4; }
-                            else { Px = P7; }
-                            liX037 += Px + BR_037; liX038 += Px + BR_038; liX039 += Px + BR_039; liX040 += Px + BR_040; liX041 += Px + BR_041; liX042 += Px + BR_042; liX043 += Px + BR_043;
-                            liX044 += Px + BR_044; liX045 += Px + BR_045; liX046 += Px + BR_046; liX047 += Px + BR_047; liX048 += Px + BR_048; liX049 += Px + BR_049; liX050 += Px + BR_050;
-                            liX051 += Px + BR_051; liX052 += Px + BR_052; liX053 += Px + BR_053; liX054 += Px + BR_054; liX055 += Px + BR_055; liX056 += Px + BR_056; liX057 += Px + BR_057;
-                            liX058 += Px + BR_058; liX059 += Px + BR_059; liX060 += Px + BR_060; liX061 += Px + BR_061; liX062 += Px + BR_062; liX063 += Px + BR_063;
-                            if (BatteryAmountCount < WideMinValue)
-                            {
-                                liX064 += Px + BR_064; liX065 += Px + BR_065; liX066 += Px + BR_066; liX067 += Px + BR_067; liX068 += Px + BR_068; liX069 += Px + BR_069;
-                                liX070 += Px + BR_070; liX071 += Px + BR_071; liX072 += Px + BR_072; liX073 += Px + BR_073; liX074 += Px + BR_074; liX075 += Px + BR_075; liX076 += Px + BR_076; liX077 += Px + BR_077; liX078 += Px + BR_078; liX079 += Px + BR_079;
-                                liX080 += Px + BR_080; liX081 += Px + BR_081; liX082 += Px + BR_082; liX083 += Px + BR_083; liX084 += Px + BR_084; liX085 += Px + BR_085; liX086 += Px + BR_086; liX087 += Px + BR_087; liX088 += Px + BR_088;
-                            }
-                        }
-                        else if (!BatteryIsEnabled)
-                        {
-                            //if batt OffliX
-                            if (OnlySmallSigns) { Px = P4; }
-                            else { Px = P7; }
-                            liX037 += Px + BR_037; liX038 += Px + BR_038; liX039 += Px + BR_039; liX040 += Px + BR_040; liX041 += Px + BR_041; liX042 += Px + BR_042; liX043 += Px + BR_043;
-                            liX044 += Px + BR_044; liX045 += Px + BR_045; liX046 += Px + BR_046; liX047 += Px + BR_047; liX048 += Px + BR_048; liX049 += Px + BR_049; liX050 += Px + BR_050;
-                            liX051 += Px + BR_051; liX052 += Px + BR_052; liX053 += Px + BR_053; liX054 += Px + BR_054; liX055 += Px + BR_055; liX056 += Px + BR_056; liX057 += Px + BR_057;
-                            liX058 += Px + BR_058; liX059 += Px + BR_059; liX060 += Px + BR_060; liX061 += Px + BR_061; liX062 += Px + BR_062; liX063 += Px + BR_063;
-                            if (BatteryAmountCount < WideMinValue)
-                            {
-                                liX064 += Px + BR_064; liX065 += Px + BR_065; liX066 += Px + BR_066; liX067 += Px + BR_067; liX068 += Px + BR_068; liX069 += Px + BR_069;
-                                liX070 += Px + BR_070; liX071 += Px + BR_071; liX072 += Px + BR_072; liX073 += Px + BR_073; liX074 += Px + BR_074; liX075 += Px + BR_075; liX076 += Px + BR_076; liX077 += Px + BR_077; liX078 += Px + BR_078; liX079 += Px + BR_079;
-                                liX080 += Px + BR_080; liX081 += Px + BR_081; liX082 += Px + BR_082; liX083 += Px + BR_083; liX084 += Px + BR_084; liX085 += Px + BR_085; liX086 += Px + BR_086; liX087 += Px + BR_087; liX088 += Px + BR_088;
-                            }
-                        }
-                        else
-                        {
-                            Cyan_on = true;
-                        }
+                        if (OnlySmallSigns) { Px = P4; }
+                        else { Px = P7; }
 
-                        if (Cyan_on)
+                        liX037 += Px + BC_037; liX038 += Px + BC_038; liX039 += Px + BC_039; liX040 += Px + BC_040; liX041 += Px + BC_041; liX042 += Px + BC_042; liX043 += Px + BC_043;
+                        liX044 += Px + BC_044; liX045 += Px + BC_045; liX046 += Px + BC_046; liX047 += Px + BC_047; liX048 += Px + BC_048; liX049 += Px + BC_049; liX050 += Px + BC_050;
+                        liX051 += Px + BC_051; liX052 += Px + BC_052; liX053 += Px + BC_053; liX054 += Px + BC_054; liX055 += Px + BC_055; liX056 += Px + BC_056; liX057 += Px + BC_057;
+                        liX058 += Px + BC_058; liX059 += Px + BC_059; liX060 += Px + BC_060; liX061 += Px + BC_061; liX062 += Px + BC_062; liX063 += Px + BC_063;
+                        if (BatteryAmountCount < WideMinValue)
                         {
-                            if (OnlySmallSigns) { Px = P4; }
-                            else { Px = P7; }
-
-                            liX037 += Px + BC_037; liX038 += Px + BC_038; liX039 += Px + BC_039; liX040 += Px + BC_040; liX041 += Px + BC_041; liX042 += Px + BC_042; liX043 += Px + BC_043;
-                            liX044 += Px + BC_044; liX045 += Px + BC_045; liX046 += Px + BC_046; liX047 += Px + BC_047; liX048 += Px + BC_048; liX049 += Px + BC_049; liX050 += Px + BC_050;
-                            liX051 += Px + BC_051; liX052 += Px + BC_052; liX053 += Px + BC_053; liX054 += Px + BC_054; liX055 += Px + BC_055; liX056 += Px + BC_056; liX057 += Px + BC_057;
-                            liX058 += Px + BC_058; liX059 += Px + BC_059; liX060 += Px + BC_060; liX061 += Px + BC_061; liX062 += Px + BC_062; liX063 += Px + BC_063;
-                            if (BatteryAmountCount < WideMinValue)
-                            {
-                                liX064 += Px + BC_064; liX065 += Px + BC_065; liX066 += Px + BC_066; liX067 += Px + BC_067; liX068 += Px + BC_068; liX069 += Px + BC_069;
-                                liX070 += Px + BC_070; liX071 += Px + BC_071; liX072 += Px + BC_072; liX073 += Px + BC_073; liX074 += Px + BC_074; liX075 += Px + BC_075; liX076 += Px + BC_076; liX077 += Px + BC_077; liX078 += Px + BC_078; liX079 += Px + BC_079;
-                                liX080 += Px + BC_080; liX081 += Px + BC_081; liX082 += Px + BC_082; liX083 += Px + BC_083; liX084 += Px + BC_084; liX085 += Px + BC_085; liX086 += Px + BC_086; liX087 += Px + BC_087; liX088 += Px + BC_088;
-                            }
+                            liX064 += Px + BC_064; liX065 += Px + BC_065; liX066 += Px + BC_066; liX067 += Px + BC_067; liX068 += Px + BC_068; liX069 += Px + BC_069;
+                            liX070 += Px + BC_070; liX071 += Px + BC_071; liX072 += Px + BC_072; liX073 += Px + BC_073; liX074 += Px + BC_074; liX075 += Px + BC_075; liX076 += Px + BC_076; liX077 += Px + BC_077; liX078 += Px + BC_078; liX079 += Px + BC_079;
+                            liX080 += Px + BC_080; liX081 += Px + BC_081; liX082 += Px + BC_082; liX083 += Px + BC_083; liX084 += Px + BC_084; liX085 += Px + BC_085; liX086 += Px + BC_086; liX087 += Px + BC_087; liX088 += Px + BC_088;
                         }
-                        BatteryLoopCounter += 1;
                     }
+
                     int Am50_10To20 = 0;
                     int Am50_20To40 = 0;
                     int Am50_30To60 = 0;
@@ -1417,15 +1407,17 @@ namespace IngameScript
                 string str_AllBoundlis_001_To_178 = str_Boundli_001_To_010 + str_Boundli_011_To_020 + str_Boundli_021_To_030 + str_Boundli_031_To_040 + str_Boundli_041_To_050 + str_Boundli_051_To_060 + str_Boundli_061_To_070 + str_Boundli_071_To_080 + str_Boundli_081_To_090 + str_Boundli_091_To_100 + str_Boundli_101_To_110 + str_Boundli_111_To_120 + str_Boundli_121_To_130 + str_Boundli_131_To_140 + str_Boundli_141_To_150 + str_Boundli_151_To_160 + str_Boundli_161_To_170 + str_Boundli_171_To_178;
 
                 // find all LCD with NameTag
-                var LCDPanels = new List<IMyTerminalBlock>();
-                GridTerminalSystem.SearchBlocksOfName(LCDNameTag, LCDPanels);
+                var LCDPanels = new List<IMyTextPanel>();
+                GridTerminalSystem.GetBlocksOfType<IMyTextPanel>(LCDPanels, blocks => {
+                    if (blocks.CustomName.Contains(LCDNameTag))
+                        return true;
+                    return false;
+                });
                 Echo("Displays: " + LCDPanels.Count);
 
                 // this loop send Message to show to all found Lcds
-                foreach(var TerminalBlock in LCDPanels)
+                foreach(var LCDPanel in LCDPanels)
                 {
-                    var LCDPanel = TerminalBlock as IMyTextPanel;
-
                     LCDPanel.SetValue("FontColor", new Color(LCDBrightness, LCDBrightness, LCDBrightness)); // White
                     LCDPanel.SetValue("FontSize", 0.10f);    // set Font size of your LCD
                     LCDPanel.SetValue("Font", (long)1147350002);
