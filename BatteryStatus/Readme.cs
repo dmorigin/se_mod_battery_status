@@ -21,12 +21,16 @@
  *  only the status of the specific batteries.
  * - NameTag [string]: The name that you want to use to mark that specific batteries
  * that you want to visit. This string musst be part of the block name.
+ * - OnlyLocalGrid [true|false]: Set this to true if you want to check only the local grid
+ * and not all batteries of all connected grids. Default is false.
  * 
  * Section "lcd"
  * - NameTag [string]: The name that you use to mark text panels that will display
  * the status of all your batteries. This string musst be part of the block name.
  * - Widscreen [true|false]: Set this to true if your text panels are widescreens.
  * - Brightness [0-255]: Setup the brightness of your text panels.
+ * - OnlyLocalGrid [true|false]: Use only displays that are part of the local grid.
+ * if you want to use lcd's of other grid set this to false. Default is true.
  * 
  * Section "display"
  * - OnlySmallSigns [true|false]: Set this to true if you want to use only small signs.

@@ -39,11 +39,14 @@ namespace IngameScript
         // NameTags Specific Blocks
         // on default this script search for all Battery's attached, and show there Status, but somethimes you want be able to
         // show only specific Battery's, then set OnlyBatteryWithNameTag to true.
-        bool OnlyBatteryWithNameTag = false; //false	= show all found Battery's attached, true = show only Battery's with Specific NameTag in their name
+        bool BatteryWithNameTag = false; //false	= show all found Battery's attached, true = show only Battery's with Specific NameTag in their name
 
         //	that means that only Battery's with a specific Name or a Word, that you added to your Battery Blockname, will be shown only
         //	you can change the Nametag here.
         string BatteryNameTag = "[Battery-Status]"; // NameTag to show only specific Battery's, example: my Battery 15 [Battery-Status]
+
+        // Check all batteries of all connected grids. Set this to true if you want only local batteries.
+        bool BatteryOnlyLocalGrid = false;
 
         //-----   LCD Settings    -----
 
@@ -54,11 +57,14 @@ namespace IngameScript
         // Wide LCD or LCD
         // on default it shows a total amount of max. 50 Battery's. There's a option to show a total amount of 100 Battery's, but this only works for wide LCDs,
         // on 1x1 LCD will be then shown just the half information! if you use Wide LCDs, then set WideLCD to true.
-        bool WideLCD = false; // true = 50 Battery's, false = Show on wide LCD's up to 100 Battery's
+        bool LCDWidescreen = false; // true = 50 Battery's, false = Show on wide LCD's up to 100 Battery's
 
         // LCD Brightness
         // 0-255, 0 = dark, 255 = Bright
         int LCDBrightness = 255;
+
+        // Use only the local grid to find LCD's.
+        bool LCDOnlyLocalGrid = true;
 
         //-----   System Settings    -----
 
@@ -69,10 +75,6 @@ namespace IngameScript
 
         //if Self updating System enabled you can choose how many times per second the script will be activated
         int SelfUpSys_perSecond = 2; // 1 = 1 sec, 2 = 2 sec etc.
-
-        // If set to true the script will ignore all connected grids. the default is false, because of the
-        // original script didn't check that.
-        bool CheckOnlyLocalGrid_Enabled = false;
 
         //-----   Display Settings    -----
 
@@ -146,18 +148,19 @@ namespace IngameScript
             if (parser.TryParse(Me.CustomData, out result))
             {
                 // battery settings
-                OnlyBatteryWithNameTag = GetConfigBool(parser, "battery", "OnlyWithNameTag", false);
+                BatteryWithNameTag = GetConfigBool(parser, "battery", "OnlyWithNameTag", false);
                 BatteryNameTag = GetConfigString(parser, "battery", "NameTag", "[Battery-Status]");
+                BatteryOnlyLocalGrid = GetConfigBool(parser, "battery", "OnlyLocalGrid", false);
 
                 // lcd settings
                 LCDNameTag = GetConfigString(parser, "lcd", "NameTag", "[Battery Status LCD]");
-                WideLCD = GetConfigBool(parser, "lcd", "Widescreen", false);
+                LCDWidescreen = GetConfigBool(parser, "lcd", "Widescreen", false);
                 LCDBrightness = GetConfigInteger(parser, "lcd", "Brightness", 255);
+                LCDOnlyLocalGrid = GetConfigBool(parser, "lcd", "OnlyLocalGrid", true);
 
                 // system settings
                 SelfUpdatingSys_Enabled = GetConfigBool(parser, "system", "UpdatingEnabled", true);
                 SelfUpSys_perSecond = GetConfigInteger(parser, "system", "UpdateInterval", 2);
-                CheckOnlyLocalGrid_Enabled = GetConfigBool(parser, "system", "CheckOnlyLocalGrid", false);
 
                 // display settings
                 OnlySmallSigns_Enabled = GetConfigBool(parser, "display", "OnlySmallSigns", false);
@@ -172,10 +175,10 @@ namespace IngameScript
 
         private bool BatteryFilterCallback(IMyTerminalBlock block)
         {
-            if (CheckOnlyLocalGrid_Enabled && block.CubeGrid != Me.CubeGrid)
+            if (BatteryOnlyLocalGrid && block.CubeGrid != Me.CubeGrid)
                 return false;
 
-            if (OnlyBatteryWithNameTag && !block.CustomName.Contains(BatteryNameTag))
+            if (BatteryWithNameTag && !block.CustomName.Contains(BatteryNameTag))
                 return false;
 
             return true;
@@ -287,7 +290,7 @@ namespace IngameScript
 
                 int WideMaxValue = 10;
                 int WideMinValue = 11;
-                if (WideLCD)
+                if (LCDWidescreen)
                 {
                     WideMaxValue = 20;
                     WideMinValue = 21;
@@ -710,7 +713,7 @@ namespace IngameScript
                     int Am50_50To100 = 0;
                     int Am10_5To10 = 0;
 
-                    if (WideLCD)
+                    if (LCDWidescreen)
                     {
                         Am50_10To20 = 21;
                         Am50_20To40 = 41;
@@ -1405,7 +1408,7 @@ namespace IngameScript
                 GridTerminalSystem.GetBlocksOfType<IMyTextPanel>(LCDPanels, block => {
                     if (block.CustomName.Contains(LCDNameTag))
                     {
-                        if (CheckOnlyLocalGrid_Enabled && block.CubeGrid != Me.CubeGrid)
+                        if (LCDOnlyLocalGrid && block.CubeGrid != Me.CubeGrid)
                             return false;
                         return true;
                     }
