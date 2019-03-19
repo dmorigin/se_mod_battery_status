@@ -38,7 +38,7 @@ programmable block which runs this script. Use the INI File format to store your
 settings in that field.
 
 You don't need to setup anything. If a setting is not set, a default value will be
-setting up. So, set only that parameters that you want to change.
+used. So, set only that parameters that you want to change.
 
 ### Possible configurations
 
@@ -103,6 +103,21 @@ Widescreen=true
 [system]
 CheckOnlyLocalGrid=true
 ```
+
+## Arguments
+
+Now we need to talk about arguments. In Space Engineers it's possible to run a script with arguments. Arguments
+are simple strings that passed to the script. There are multiple ways to pass arguments. The fastes way is to
+use the field "Argument" of the programmable block himself. Type in your argument and press "Run". The following
+Arguments are supported by this script.
+
+- **restoreDefault**: Execute this script to restore all settings to it's default value. This is a destructive
+ argument. All your previous settings will be overwritten by it's default value. Make sure you are know what 
+ you are doing. Normaly there is no need to do this. The script will write the default values automaticaly once.
+ If no data is set inside the CustomData field.
+- **readConfig**: Use this argument after you has changed the settings. The settings will not be read automaticaly.
+ This happens only once after the block is booting up. So, if you change some settings you need to tell the script
+ that.
 
 ## Remarks
 

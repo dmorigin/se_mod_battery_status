@@ -37,70 +37,31 @@ namespace IngameScript
         //-----   Battery Settings    -----
 
         // NameTags Specific Blocks
-        // on default this script search for all Battery's attached, and show there Status, but somethimes you want be able to
-        // show only specific Battery's, then set OnlyBatteryWithNameTag to true.
         bool BatteryWithNameTag = false; //false	= show all found Battery's attached, true = show only Battery's with Specific NameTag in their name
-
-        //	that means that only Battery's with a specific Name or a Word, that you added to your Battery Blockname, will be shown only
-        //	you can change the Nametag here.
         string BatteryNameTag = "[Battery-Status]"; // NameTag to show only specific Battery's, example: my Battery 15 [Battery-Status]
-
-        // Check all batteries of all connected grids. Set this to true if you want only local batteries.
         bool BatteryOnlyLocalGrid = false;
 
         //-----   LCD Settings    -----
 
-        // LCD / Text Panel to show status
-        // All LCD with a specific NameTag included in their name, will be show the information. You can edit the NameTag here.
         string LCDNameTag = "[Battery Status LCD]"; //example: my LCD 31 [Battery Status LCD]
-
-        // Wide LCD or LCD
-        // on default it shows a total amount of max. 50 Battery's. There's a option to show a total amount of 100 Battery's, but this only works for wide LCDs,
-        // on 1x1 LCD will be then shown just the half information! if you use Wide LCDs, then set WideLCD to true.
         bool LCDWidescreen = false; // true = 50 Battery's, false = Show on wide LCD's up to 100 Battery's
-
-        // LCD Brightness
-        // 0-255, 0 = dark, 255 = Bright
         int LCDBrightness = 255;
-
-        // Use only the local grid to find LCD's.
         bool LCDOnlyLocalGrid = true;
 
         //-----   System Settings    -----
 
-        // Self updating System
-        // thanks to SpaceEngeneers Update 1.185.1, we are able to use a new system, no need for timer,
-        // false = you need an activation
         bool SelfUpdatingSys_Enabled = true; // false = Off, true = after compile script Selfupdating starts
-
-        //if Self updating System enabled you can choose how many times per second the script will be activated
         int SelfUpSys_perSecond = 2; // 1 = 1 sec, 2 = 2 sec etc.
 
         //-----   Display Settings    -----
 
-        // this script change size of the Symbols depending of the amount.
-        // it shows Large Symbols for an total amount of 1-10 Battery's on 1x1 LCDs, and a total amount of 1-20 Battery's on wide LCDs, all amount above will be shown
-        // in small Symbols, to show always small Symbols set it to true
         bool OnlySmallSigns_Enabled = false; // true = always small symbols, false = depending on amount
-
-        // Shows Title on top of the LCD / Text Panel
-        // "BATTERY STATUS" as title on Top, if disabled it leaves it space black
         bool BatteryTitle_Enabled = true; // true = show title, false = no title
-
-        //there are three lines as border, you can deaktivate each of them of you want, true = on, false = off
         bool Underline_1_Enabled = true; // Show Underline below Title
         bool BatSpaceline_Enabled = true; // Show Middle line between Battery Amount and Stored Energy
         bool Underline_2_Enabled = true; // Show Underline Below Battery Amount and Stored Energy
-
-        // Show Amount of Battery's displayed
         bool BatteryAmountEnabled = true; // true = Show Amount, false = off
-
-        // Show total amount of all Stored Energy in Wh, kWh, MWh or GWh, Units depending on amount of Energy
         bool BatteryAllStoredEnergyEnabled = true; // true = Show stored Energy, false = off
-
-        // Show Status of Power Input with an small Flash-Symbol
-        // if true, when no Power input = red, Reactor online = Green, Solar Panel online and no reactor online = Cyan
-        // Power Input below needed supply = Orange
         bool PowerInput_Enabled = true; // true = Show Power Input supply, Flash-Symbol changes color for different states, false = off
 
 
@@ -139,6 +100,54 @@ namespace IngameScript
                 return parser.Get(section, key).ToInt32();
 
             return defaultValue;
+        }
+
+        private void writeDefaultConfiguration()
+        {
+            MyIni parser = new MyIni();
+            
+            parser.Set("battery", "NameTag", "[Battery-Status]");
+            parser.SetComment("battery", "NameTag", "Sets the name that will be used in specific batteries to find.");
+            parser.Set("battery", "OnlyWithNameTag", false);
+            parser.SetComment("battery", "OnlyWithNameTag", "Show only batteries that have the NameTag in their name.");
+            parser.Set("battery", "OnlyLocalGrid", false);
+            parser.SetComment("battery", "OnlyLocalGrid", "Search only within your own grid.");
+
+            parser.Set("lcd", "NameTag", "[Battery Status LCD]");
+            parser.SetComment("lcd", "NameTag", "Sets the name used in the LCD panels to be found.");
+            parser.Set("lcd", "OnlyLocalGrid", true);
+            parser.SetComment("lcd", "OnlyLocalGrid", "Search only within your own grid.");
+            parser.Set("lcd", "Widscreen", false);
+            parser.SetComment("lcd", "Widscreen", "The LCD panel is a wide screen.");
+            parser.Set("lcd", "Brightness", 255);
+            parser.SetComment("lcd", "Brightness", "Sets the brightness of the screen.");
+
+            parser.Set("system", "UpdatingEnabled", true);
+            parser.SetComment("system", "UpdatingEnabled", "Enables automatic updating.");
+            parser.Set("system", "UpdateInterval", 2);
+            parser.SetComment("system", "UpdateInterval", "Sets the automatic update interval. Value is in seconds.");
+
+            parser.Set("display", "OnlySmallSigns", false);
+            parser.SetComment("display", "OnlySmallSigns", "Show only small symbols.");
+            parser.Set("display", "ShowBatteryTitle", true);
+            parser.SetComment("display", "ShowBatteryTitle", "Display the title.");
+            parser.Set("display", "ShowUnderlineBelowTitle", true);
+            parser.SetComment("display", "ShowUnderlineBelowTitle", "Show a line under the title.");
+            parser.Set("display", "ShowUnderlineBelowStatus", true);
+            parser.SetComment("display", "ShowUnderlineBelowStatus", "Show a line under the status.");
+            parser.Set("display", "ShowSeperatorInStatus", true);
+            parser.SetComment("display", "ShowSeperatorInStatus", "Show a separator in the status.");
+            parser.Set("display", "ShowBatteryAmount", true);
+            parser.SetComment("display", "ShowBatteryAmount", "Show the number of batteries.");
+            parser.Set("display", "ShowTotalStoredPower", true);
+            parser.SetComment("display", "ShowTotalStoredPower", "Show the amount of stored energy..");
+
+            parser.SetSectionComment("battery", "This section bundles all configuration for your batteries.");
+            parser.SetSectionComment("lcd", "This section bundles all configurations for your lcd panels.");
+            parser.SetSectionComment("system", "This section bundles configurations that modify the working process.");
+            parser.SetSectionComment("display", "This section bundles the visual style that will display on your lcd panels.");
+
+            Me.CustomData = parser.ToString();
         }
 
         private void ReadConfiguration()
@@ -186,6 +195,10 @@ namespace IngameScript
 
         public Program()
         {
+            // write default configuration if custom data is empty
+            if (Me.CustomData.Length == 0)
+                writeDefaultConfiguration();
+
             // read configuration
             ReadConfiguration();
 
@@ -203,7 +216,13 @@ namespace IngameScript
         // Main Script Start
         public void Main(string argument, UpdateType updateSource)
         {
-            if (argument.Contains("readConfig"))
+            if (argument.Contains("restoreDefault"))
+            {
+                writeDefaultConfiguration();
+                ReadConfiguration();
+                return;
+            }
+            else if (argument.Contains("readConfig"))
             {
                 ReadConfiguration();
                 return;
