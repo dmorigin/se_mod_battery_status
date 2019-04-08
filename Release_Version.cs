@@ -6,34 +6,24 @@
 #
 #   Modified by: DMOrigin
 #   URL: https://www.gamers-shell.de/
-
 ################################################################################
 # 	Description:
 This script shows Battery level state on standart LCDs or wide LCDs, as digital Symbols
 Just edit your options, and it you will able to overwatch up to 100 Battery's very easy.*/
-
-
 //-----   Battery Settings    -----
-
 // NameTags Specific Blocks
 bool BatteryWithNameTag = false; //false	= show all found Battery's attached, true = show only Battery's with Specific NameTag in their name
 string BatteryNameTag = "[Battery-Status]"; // NameTag to show only specific Battery's, example: my Battery 15 [Battery-Status]
 bool BatteryOnlyLocalGrid = false;
-
 //-----   LCD Settings    -----
-
 string LCDNameTag = "[Battery Status LCD]"; //example: my LCD 31 [Battery Status LCD]
 bool LCDWidescreen = false; // true = 50 Battery's, false = Show on wide LCD's up to 100 Battery's
 int LCDBrightness = 255;
 bool LCDOnlyLocalGrid = true;
-
 //-----   System Settings    -----
-
 bool SelfUpdatingSys_Enabled = true; // false = Off, true = after compile script Selfupdating starts
 int SelfUpSys_perSecond = 2; // 1 = 1 sec, 2 = 2 sec etc.
-
 //-----   Display Settings    -----
-
 bool OnlySmallSigns_Enabled = false; // true = always small symbols, false = depending on amount
 bool BatteryTitle_Enabled = true; // true = show title, false = no title
 bool Underline_1_Enabled = true; // Show Underline below Title
@@ -42,11 +32,8 @@ bool Underline_2_Enabled = true; // Show Underline Below Battery Amount and Stor
 bool BatteryAmountEnabled = true; // true = Show Amount, false = off
 bool BatteryAllStoredEnergyEnabled = true; // true = Show stored Energy, false = off
 bool PowerInput_Enabled = true; // true = Show Power Input supply, Flash-Symbol changes color for different states, false = off
-
-
 int SelfUpSysCounttimes = 5;
 int SelfUpSysCounter = 0;
-
 enum PowerMetricUnit
 {
 Wh,
@@ -54,44 +41,35 @@ kWh,
 MWh,
 GWh
 };
-
 //Dont touch the script below, to prevent errors
 //################################################################################
 private bool GetConfigBool(MyIni parser, string section, string key, bool defaultValue = false)
 {
 if (parser.ContainsKey(section, key))
 return parser.Get(section, key).ToBoolean();
-
 return defaultValue;
 }
-
 private string GetConfigString(MyIni parser, string section, string key, string defaultValue = "")
 {
 if (parser.ContainsKey(section, key))
 return parser.Get(section, key).ToString();
-
 return defaultValue;
 }
-
 private int GetConfigInteger(MyIni parser, string section, string key, int defaultValue = 0)
 {
 if (parser.ContainsKey(section, key))
 return parser.Get(section, key).ToInt32();
-
 return defaultValue;
 }
-
 private void writeDefaultConfiguration()
 {
 MyIni parser = new MyIni();
-
 parser.Set("battery", "NameTag", "[Battery-Status]");
 parser.SetComment("battery", "NameTag", "Sets the name that will be used in specific batteries to find.");
 parser.Set("battery", "OnlyWithNameTag", false);
 parser.SetComment("battery", "OnlyWithNameTag", "Show only batteries that have the NameTag in their name.");
 parser.Set("battery", "OnlyLocalGrid", false);
 parser.SetComment("battery", "OnlyLocalGrid", "Search only within your own grid.");
-
 parser.Set("lcd", "NameTag", "[Battery Status LCD]");
 parser.SetComment("lcd", "NameTag", "Sets the name used in the LCD panels to be found.");
 parser.Set("lcd", "OnlyLocalGrid", true);
@@ -100,12 +78,10 @@ parser.Set("lcd", "Widscreen", false);
 parser.SetComment("lcd", "Widscreen", "The LCD panel is a wide screen.");
 parser.Set("lcd", "Brightness", 255);
 parser.SetComment("lcd", "Brightness", "Sets the brightness of the screen.");
-
 parser.Set("system", "UpdatingEnabled", true);
 parser.SetComment("system", "UpdatingEnabled", "Enables automatic updating.");
 parser.Set("system", "UpdateInterval", 2);
 parser.SetComment("system", "UpdateInterval", "Sets the automatic update interval. Value is in seconds.");
-
 parser.Set("display", "OnlySmallSigns", false);
 parser.SetComment("display", "OnlySmallSigns", "Show only small symbols.");
 parser.Set("display", "ShowBatteryTitle", true);
@@ -120,15 +96,12 @@ parser.Set("display", "ShowBatteryAmount", true);
 parser.SetComment("display", "ShowBatteryAmount", "Show the number of batteries.");
 parser.Set("display", "ShowTotalStoredPower", true);
 parser.SetComment("display", "ShowTotalStoredPower", "Show the amount of stored energy..");
-
 parser.SetSectionComment("battery", "This section bundles all configuration for your batteries.");
 parser.SetSectionComment("lcd", "This section bundles all configurations for your lcd panels.");
 parser.SetSectionComment("system", "This section bundles configurations that modify the working process.");
 parser.SetSectionComment("display", "This section bundles the visual style that will display on your lcd panels.");
-
 Me.CustomData = parser.ToString();
 }
-
 private void ReadConfiguration()
 {
 MyIni parser = new MyIni();
@@ -139,17 +112,14 @@ if (parser.TryParse(Me.CustomData, out result))
 BatteryWithNameTag = GetConfigBool(parser, "battery", "OnlyWithNameTag", false);
 BatteryNameTag = GetConfigString(parser, "battery", "NameTag", "[Battery-Status]");
 BatteryOnlyLocalGrid = GetConfigBool(parser, "battery", "OnlyLocalGrid", false);
-
 // lcd settings
 LCDNameTag = GetConfigString(parser, "lcd", "NameTag", "[Battery Status LCD]");
 LCDWidescreen = GetConfigBool(parser, "lcd", "Widescreen", false);
 LCDBrightness = GetConfigInteger(parser, "lcd", "Brightness", 255);
 LCDOnlyLocalGrid = GetConfigBool(parser, "lcd", "OnlyLocalGrid", true);
-
 // system settings
 SelfUpdatingSys_Enabled = GetConfigBool(parser, "system", "UpdatingEnabled", true);
 SelfUpSys_perSecond = GetConfigInteger(parser, "system", "UpdateInterval", 2);
-
 // display settings
 OnlySmallSigns_Enabled = GetConfigBool(parser, "display", "OnlySmallSigns", false);
 BatteryTitle_Enabled = GetConfigBool(parser, "display", "ShowBatteryTitle", true);
@@ -160,38 +130,30 @@ BatteryAmountEnabled = GetConfigBool(parser, "display", "ShowBatteryAmount", tru
 BatteryAllStoredEnergyEnabled = GetConfigBool(parser, "display", "ShowTotalStoredPower", true);
 }
 }
-
 private bool BatteryFilterCallback(IMyTerminalBlock block)
 {
 if (BatteryOnlyLocalGrid && block.CubeGrid != Me.CubeGrid)
 return false;
-
 if (BatteryWithNameTag && !block.CustomName.Contains(BatteryNameTag))
 return false;
-
 return true;
 }
-
 public Program()
 {
 // write default configuration if custom data is empty
 if (Me.CustomData.Length == 0)
 writeDefaultConfiguration();
-
 // read configuration
 ReadConfiguration();
-
 if (SelfUpdatingSys_Enabled)
 {
 Runtime.UpdateFrequency = UpdateFrequency.Update10;
 }
 }
-
 public void Save()
 {
 // empty
 }
-
 // Main Script Start
 public void Main(string argument, UpdateType updateSource)
 {
@@ -206,7 +168,6 @@ else if (argument.Contains("readConfig"))
 ReadConfiguration();
 return;
 }
-
 bool Run_ThisScript = false;
 if (SelfUpdatingSys_Enabled)
 {
@@ -224,14 +185,11 @@ else
 {
 Run_ThisScript = true;
 }
-
 if (Run_ThisScript)
 {
 Echo("\nBattery Status script:\nby Lightwolf\nModified by DMOrigin\n\nSelf Updating every " + SelfUpSys_perSecond + " Seconds\n");
-
 PowerMetricUnit BatteryStoredUnit = PowerMetricUnit.kWh;
 //bool OnlyNameTag = false;
-
 //Pixel Tempelates
 string P1 = "";
 string P2 = "";
@@ -253,16 +211,13 @@ string underli_B = "
 //Space		########################################
 string li035 = "";
 string li036 = "";
-
 string li037 = ""; string li038 = ""; string li039 = "";
 string li040 = ""; string li041 = ""; string li042 = ""; string li043 = ""; string li044 = ""; string li045 = ""; string li046 = ""; string li047 = ""; string li048 = ""; string li049 = "";
 string li050 = ""; string li051 = ""; string li052 = ""; string li053 = ""; string li054 = ""; string li055 = ""; string li056 = ""; string li057 = ""; string li058 = ""; string li059 = "";
 string li060 = ""; string li061 = ""; string li062 = ""; string li063 = ""; string li064 = ""; string li065 = ""; string li066 = ""; string li067 = ""; string li068 = ""; string li069 = "";
 string li070 = ""; string li071 = ""; string li072 = ""; string li073 = ""; string li074 = ""; string li075 = ""; string li076 = ""; string li077 = ""; string li078 = ""; string li079 = "";
 string li080 = ""; string li081 = ""; string li082 = ""; string li083 = ""; string li084 = ""; string li085 = ""; string li086 = ""; string li087 = ""; string li088 = "";
-
 string li089 = ""; string li090 = ""; string li091 = ""; string li092 = ""; string li093 = "";
-
 string li094 = ""; string li095 = ""; string li096 = ""; string li097 = ""; string li098 = ""; string li099 = ""; string li100 = "";
 string li101 = ""; string li102 = ""; string li103 = ""; string li104 = ""; string li105 = ""; string li106 = ""; string li107 = ""; string li108 = ""; string li109 = "";
 string li110 = ""; string li111 = ""; string li112 = ""; string li113 = ""; string li114 = ""; string li115 = ""; string li116 = ""; string li117 = ""; string li118 = ""; string li119 = "";
@@ -272,20 +227,16 @@ string li140 = ""; string li141 = ""; string li142 = ""; string li143 = ""; stri
 string li150 = ""; string li151 = ""; string li152 = ""; string li153 = ""; string li154 = ""; string li155 = ""; string li156 = ""; string li157 = ""; string li158 = ""; string li159 = "";
 string li160 = ""; string li161 = ""; string li162 = ""; string li163 = ""; string li164 = ""; string li165 = ""; string li166 = ""; string li167 = ""; string li168 = ""; string li169 = "";
 string li170 = ""; string li171 = ""; string li172 = ""; string li173 = ""; string li174 = ""; string li175 = ""; string li176 = ""; string li177 = ""; string li178 = "";
-
 //Battery Status	########################################
-
 // Create list with all Batterys attached/added
 var BatteryList = new List<IMyBatteryBlock>(); //create new empty list
 GridTerminalSystem.GetBlocksOfType<IMyBatteryBlock>(BatteryList, BatteryFilterCallback); //put all Batterys in this list
 Echo("Batteries: " + BatteryList.Count);
-
 float BatteryCurrentInputTotal = 0f; // Value in KW
 float BatteryCurrentStoredTotal = 0f; // value in KW
 int BatteryLoopCounter = 0;
 int BatteryAmountCount = BatteryList.Count;
 bool OnlySmallSigns = false;
-
 int WideMaxValue = 10;
 int WideMinValue = 11;
 if (LCDWidescreen)
@@ -293,10 +244,8 @@ if (LCDWidescreen)
 WideMaxValue = 20;
 WideMinValue = 21;
 }
-
 if (OnlySmallSigns_Enabled) { OnlySmallSigns = true; }
 else if (BatteryAmountCount > WideMaxValue) { OnlySmallSigns = true; }
-
 string pz = P2;
 if (OnlySmallSigns)
 {
@@ -311,17 +260,13 @@ li136 = pz; li137 = pz; li138 = pz; li139 = pz; li140 = pz; li141 = pz; li142 = 
 li151 = pz; li152 = pz; li153 = pz; li154 = pz; li155 = pz; li156 = pz; li157 = pz; li158 = pz; li159 = pz; li160 = pz; li161 = pz; li162 = pz; li163 = pz; li164 = pz;
 li165 = pz; li166 = pz; li167 = pz; li168 = pz; li169 = pz; li170 = pz; li171 = pz; li172 = pz; li173 = pz; li174 = pz; li175 = pz; li176 = pz; li177 = pz;
 }
-
 foreach (var Battery in BatteryList)
 {
 BatteryLoopCounter += 1;
-
 // replacement for the string operations
 float BatteryCurrentStored = Battery.CurrentStoredPower * 1000f;
-
 BatteryCurrentInputTotal += Battery.CurrentInput * 1000f;
 BatteryCurrentStoredTotal += BatteryCurrentStored;
-
 //Get Battery ST in percent
 float BatLevel = (Battery.MaxStoredPower * 1000f) / 6; //Battery Level 1 percent
 float BatLevel_1 = BatLevel; // 1 Bar
@@ -330,23 +275,19 @@ float BatLevel_3 = BatLevel * 3; // 3 Bar
 float BatLevel_4 = BatLevel * 4; // 4 Bar
 float BatLevel_5 = BatLevel * 5; // 5 Bar
 float BatLevel_6 = BatLevel * 6; // 6 Bar
-
 //BatteST Val empty
 string Py = P17;
 string BB_Gr = ""; string BB_Cyan = ""; string BB_Ye = ""; string BB_Or = ""; string BB_Re = "";
-
 if (OnlySmallSigns) { Py = P11; BB_Gr = ""; BB_Cyan = ""; BB_Ye = ""; BB_Or = ""; BB_Re = ""; }
 string BBST01 = Py; string BBST02 = Py; string BBST03 = Py; string BBST04 = Py; string BBST05 = Py; string BBST06 = Py; string BBST07 = Py; string BBST08 = Py; string BBST09 = Py;
 string BBST10 = Py; string BBST11 = Py; string BBST12 = Py; string BBST13 = Py; string BBST14 = Py; string BBST15 = Py; string BBST16 = Py; string BBST17 = Py; string BBST18 = Py; string BBST19 = Py;
 string BBST20 = Py; string BBST21 = Py; string BBST22 = Py; string BBST23 = Py; string BBST24 = Py; string BBST25 = Py; string BBST26 = Py; string BBST27 = Py; string BBST28 = Py; string BBST29 = Py;
 string BBST30 = Py; string BBST31 = Py; string BBST32 = Py; string BBST33 = Py; string BBST34 = Py; string BBST35 = Py; string BBST36 = Py; string BBST37 = Py; string BBST38 = Py; string BBST39 = Py;
-
 bool BatteryIsFunctional = false;
 bool BatteryIsCharging = false;
 bool BatteryOnlyRecharge = false;
 bool BatteryOnlyDischarge = false;
 bool BatteryIsEnabled = false;
-
 if (Battery.Enabled)
 {
 BatteryIsEnabled = true;
@@ -362,7 +303,6 @@ else if (Battery.ChargeMode == ChargeMode.Discharge) { BatteryOnlyDischarge = tr
 }
 }
 else if (Battery.IsFunctional) { BatteryIsFunctional = true; }
-
 bool Level_on = false;
 //if batt Charging
 if (BatteryIsCharging) { Level_on = true; }
@@ -406,7 +346,6 @@ BBST29 = P17; BBST30 = P17; BBST31 = P17; BBST32 = P17; BBST33 = P17; BBST34 = P
 }
 }
 else { Level_on = true; }
-
 if (BatteryIsFunctional)
 {
 if (Level_on)
@@ -517,7 +456,6 @@ BBST24 = ""; BBST25 = "
 BBST29 = P17; BBST30 = P17; BBST31 = P17; BBST32 = P17; BBST33 = P17; BBST34 = P17; BBST35 = P17; BBST36 = P17; BBST37 = P17; BBST38 = P17; BBST39 = P17;
 }
 }
-
 // Fuse batt Sign together	########################################
 string BC_037 = ""; string BG_037 = ""; string BR_037 = ""; string Bo_037 = "";
 string BC_038 = ""; string BG_038 = ""; string BR_038 = ""; string Bo_038 = "";
@@ -526,7 +464,6 @@ string BC_040 = "
 string BC_041 = ""; string BG_041 = ""; string BR_041 = ""; string Bo_041 = "";
 string BC_042 = ""; string BG_042 = ""; string BR_042 = ""; string Bo_042 = "";
 string BC_043 = ""; string BG_043 = ""; string BR_043 = ""; string Bo_043 = "";
-
 string BC_044 = "" + BBST01 + ""; string BG_044 = "" + BBST01 + ""; string BR_044 = "" + BBST01 + ""; string Bo_044 = "" + BBST01 + "";
 string BC_045 = "" + BBST02 + ""; string BG_045 = "" + BBST02 + ""; string BR_045 = "" + BBST02 + ""; string Bo_045 = "" + BBST02 + "";
 string BC_046 = "" + BBST03 + ""; string BG_046 = "" + BBST03 + ""; string BR_046 = "" + BBST03 + ""; string Bo_046 = "" + BBST03 + "";
@@ -609,10 +546,8 @@ string liX050 = ""; string liX051 = ""; string liX052 = ""; string liX053 = ""; 
 string liX060 = ""; string liX061 = ""; string liX062 = ""; string liX063 = ""; string liX064 = ""; string liX065 = ""; string liX066 = ""; string liX067 = ""; string liX068 = ""; string liX069 = "";
 string liX070 = ""; string liX071 = ""; string liX072 = ""; string liX073 = ""; string liX074 = ""; string liX075 = ""; string liX076 = ""; string liX077 = ""; string liX078 = ""; string liX079 = "";
 string liX080 = ""; string liX081 = ""; string liX082 = ""; string liX083 = ""; string liX084 = ""; string liX085 = ""; string liX086 = ""; string liX087 = ""; string liX088 = "";
-
 string Px = "";
 bool Cyan_on = false;
-
 //if batt Charging
 if (BatteryIsCharging)
 {
@@ -686,12 +621,10 @@ else
 {
 Cyan_on = true;
 }
-
 if (Cyan_on)
 {
 if (OnlySmallSigns) { Px = P4; }
 else { Px = P7; }
-
 liX037 += Px + BC_037; liX038 += Px + BC_038; liX039 += Px + BC_039; liX040 += Px + BC_040; liX041 += Px + BC_041; liX042 += Px + BC_042; liX043 += Px + BC_043;
 liX044 += Px + BC_044; liX045 += Px + BC_045; liX046 += Px + BC_046; liX047 += Px + BC_047; liX048 += Px + BC_048; liX049 += Px + BC_049; liX050 += Px + BC_050;
 liX051 += Px + BC_051; liX052 += Px + BC_052; liX053 += Px + BC_053; liX054 += Px + BC_054; liX055 += Px + BC_055; liX056 += Px + BC_056; liX057 += Px + BC_057;
@@ -703,14 +636,12 @@ liX070 += Px + BC_070; liX071 += Px + BC_071; liX072 += Px + BC_072; liX073 += P
 liX080 += Px + BC_080; liX081 += Px + BC_081; liX082 += Px + BC_082; liX083 += Px + BC_083; liX084 += Px + BC_084; liX085 += Px + BC_085; liX086 += Px + BC_086; liX087 += Px + BC_087; liX088 += Px + BC_088;
 }
 }
-
 int Am50_10To20 = 0;
 int Am50_20To40 = 0;
 int Am50_30To60 = 0;
 int Am50_40To80 = 0;
 int Am50_50To100 = 0;
 int Am10_5To10 = 0;
-
 if (LCDWidescreen)
 {
 Am50_10To20 = 21;
@@ -718,7 +649,6 @@ Am50_20To40 = 41;
 Am50_30To60 = 61;
 Am50_40To80 = 81;
 Am50_50To100 = 80;
-
 Am10_5To10 = 11;
 }
 else
@@ -728,10 +658,8 @@ Am50_20To40 = 21;
 Am50_30To60 = 31;
 Am50_40To80 = 41;
 Am50_50To100 = 40;
-
 Am10_5To10 = 6;
 }
-
 if (OnlySmallSigns)
 {
 // if batt Amount 19-50
@@ -786,14 +714,12 @@ if (BatteryLoopCounter < Am10_5To10)
 {
 li035 = PxFull;
 li036 = PxFull;
-
 li037 += liX037; li038 += liX038; li039 += liX039;
 li040 += liX040; li041 += liX041; li042 += liX042; li043 += liX043; li044 += liX044; li045 += liX045; li046 += liX046; li047 += liX047; li048 += liX048; li049 += liX049;
 li050 += liX050; li051 += liX051; li052 += liX052; li053 += liX053; li054 += liX054; li055 += liX055; li056 += liX056; li057 += liX057; li058 += liX058; li059 += liX059;
 li060 += liX060; li061 += liX061; li062 += liX062; li063 += liX063; li064 += liX064; li065 += liX065; li066 += liX066; li067 += liX067; li068 += liX068; li069 += liX069;
 li070 += liX070; li071 += liX071; li072 += liX072; li073 += liX073; li074 += liX074; li075 += liX075; li076 += liX076; li077 += liX077; li078 += liX078; li079 += liX079;
 li080 += liX080; li081 += liX081; li082 += liX082; li083 += liX083; li084 += liX084; li085 += liX085; li086 += liX086; li087 += liX087; li088 += liX088;
-
 li089 = PxFull;
 li090 = PxFull;
 li091 = PxFull;
@@ -812,7 +738,6 @@ li137 += liX080; li138 += liX081; li139 += liX082; li140 += liX083; li141 += liX
 }
 }
 }//End Battery Loop
-
 //Power Generator Status	########################################
 string PG_ST_018 = P28; string AmX018 = P11;
 string PG_ST_019 = P28; string AmX019 = P11;
@@ -827,7 +752,6 @@ string PG_ST_027 = P28; string AmX027 = P11;
 string PG_ST_028 = P28; string AmX028 = P11;
 string PG_ST_029 = P28; string AmX029 = P11;
 string PG_ST_030 = P28; string AmX030 = P11;
-
 string PG_Off_019 = ""; string PG_On_019 = ""; string PG_G_019 = ""; string PG_L_019 = "";
 string PG_Off_020 = ""; string PG_On_020 = ""; string PG_G_020 = ""; string PG_L_020 = "";
 string PG_Off_021 = ""; string PG_On_021 = ""; string PG_G_021 = ""; string PG_L_021 = "";
@@ -839,11 +763,9 @@ string PG_Off_026 = ""; string PG_On_026 = "
 string PG_Off_027 = ""; string PG_On_027 = ""; string PG_G_027 = ""; string PG_L_027 = "";
 string PG_Off_028 = ""; string PG_On_028 = ""; string PG_G_028 = ""; string PG_L_028 = "";
 string PG_Off_029 = ""; string PG_On_029 = ""; string PG_G_029 = ""; string PG_L_029 = "";
-
 int PowGenAmount = 0;
 float GenSol_CurrentOutput = 0f;
 float Solar_CurrentPower_MW = 0f;
-
 if (PowerInput_Enabled)
 {
 var power_producer = new List<IMyPowerProducer>();
@@ -856,7 +778,6 @@ var isBattery = pp as IMyBatteryBlock;
 if (isBattery == null)
 {
 GenSol_CurrentOutput += pp.CurrentOutput;
-
 var isSolar = pp as IMySolarPanel;
 if (isSolar != null)
 Solar_CurrentPower_MW += pp.CurrentOutput;
@@ -865,9 +786,7 @@ PowGenAmount += 1; // Power Generator Counter (Excluding Solar Panels)
 }
 }
 }
-
 GenSol_CurrentOutput *= 1000; // mW to kW
-
 if (PowGenAmount > 0)
 {   //if Power Gen found
 PG_ST_018 = "";
@@ -947,7 +866,6 @@ string AmN1027 = P11; string AmN2027 = P11; string AmN3027 = P11; string BatSpLi
 string AmN1028 = P11; string AmN2028 = P11; string AmN3028 = P11; string BatSpLi028 = P2;
 string AmN1029 = P11; string AmN2029 = P11; string AmN3029 = P11; string BatSpLi029 = P2;
 string AmN1030 = P11; string AmN2030 = P11; string AmN3030 = P11; string BatSpLi030 = P2;
-
 string MWN1018 = P11; string MWN2018 = P11; string MWN3018 = P11;
 string MWN1019 = P11; string MWN2019 = P11; string MWN3019 = P11;
 string MWN1020 = P11; string MWN2020 = P11; string MWN3020 = P11;
@@ -961,7 +879,6 @@ string MWN1027 = P11; string MWN2027 = P11; string MWN3027 = P11;
 string MWN1028 = P11; string MWN2028 = P11; string MWN3028 = P11;
 string MWN1029 = P11; string MWN2029 = P11; string MWN3029 = P11;
 string MWN1030 = P11; string MWN2030 = P11; string MWN3030 = P11;
-
 int input = 0;
 int Am_NX = 0;
 int Am_NXX = 0;
@@ -969,7 +886,6 @@ int Am_NXXX = 0;
 int MW_NX = 0;
 int MW_NXX = 0;
 int MW_NXXX = 0;
-
 if (BatteryAmountEnabled)
 {
 if (!PowerInput_Enabled)
@@ -1005,18 +921,14 @@ AmX030 = "";
 //Convert Val-Number seperate Num, for Amount + Stored Energy
 int CounterNumConvert = 2;
 int CheckerNumConvert = CounterNumConvert;
-
 if (BatteryCurrentStoredTotal > 999999) { BatteryCurrentStoredTotal /= 1000000; BatteryStoredUnit = PowerMetricUnit.GWh; }
 else if (BatteryCurrentStoredTotal > 999) { BatteryCurrentStoredTotal /= 1000; BatteryStoredUnit = PowerMetricUnit.MWh; }
 else if (BatteryCurrentStoredTotal < 1) { BatteryCurrentStoredTotal *= 1000; BatteryStoredUnit = PowerMetricUnit.Wh; }
-
 int numVal = Convert.ToInt32(BatteryCurrentStoredTotal);
-
 for (int i = 0; i < CounterNumConvert; i++)
 {   // Here set your Number to split
 if (CheckerNumConvert == 2) { input = BatteryLoopCounter; }
 else if (CheckerNumConvert == 1) { input = numVal; }
-
 // Create Variables to hold Data
 int input_No100 = 0;
 int input_No10 = 0;
@@ -1100,7 +1012,6 @@ else { input_No1 = 0; }
 if (CheckerNumConvert == 2) { Am_NX = input_No1; Am_NXX = input_No10; Am_NXXX = input_No100; }
 else if (CheckerNumConvert == 1) { MW_NX = input_No1; MW_NXX = input_No10; MW_NXXX = input_No100; }
 CheckerNumConvert = CheckerNumConvert - 1;
-
 // Returns:
 //Am_NX
 //Am_NXX
@@ -1111,11 +1022,9 @@ CheckerNumConvert = CheckerNumConvert - 1;
 }
 string Chk_Num_018 = P11; string Chk_Num_019 = P11; string Chk_Num_020 = P11; string Chk_Num_021 = P11; string Chk_Num_022 = P11; string Chk_Num_023 = P11; string Chk_Num_024 = P11;
 string Chk_Num_025 = P11; string Chk_Num_026 = P11; string Chk_Num_027 = P11; string Chk_Num_028 = P11; string Chk_Num_029 = P11; string Chk_Num_030 = P11;
-
 int Chk_Num_X = 0;
 int Chk_StateCounter = 6;
 int Chk_State = Chk_StateCounter;
-
 for (int i = 0; i < Chk_StateCounter; i++)
 {
 if (Chk_State == 6) { Chk_Num_X = Am_NXXX; }
@@ -1124,8 +1033,6 @@ else if (Chk_State == 4) { Chk_Num_X = Am_NX; }
 else if (Chk_State == 3) { Chk_Num_X = MW_NXXX; }
 else if (Chk_State == 2) { Chk_Num_X = MW_NXX; }
 else if (Chk_State == 1) { Chk_Num_X = MW_NX; }
-
-
 if (Chk_Num_X == 9)
 {
 Chk_Num_018 = ""; Chk_Num_019 = ""; Chk_Num_020 = ""; Chk_Num_021 = ""; Chk_Num_022 = ""; Chk_Num_023 = "";
@@ -1195,7 +1102,6 @@ Chk_Num_018 = ""; Chk_Num_019 = "�
 Chk_Num_024 = ""; Chk_Num_025 = ""; Chk_Num_026 = ""; Chk_Num_027 = ""; Chk_Num_028 = ""; Chk_Num_029 = ""; Chk_Num_030 = "";
 }
 }
-
 if (Chk_State == 6)
 {
 if (BatteryAmountEnabled)
@@ -1259,7 +1165,6 @@ string Unit_ST10 = P38;
 string Unit_ST11 = P38;
 string Unit_ST12 = P38;
 string Unit_ST13 = P38;
-
 if (BatteryAllStoredEnergyEnabled)
 {
 switch(BatteryStoredUnit)
@@ -1356,7 +1261,6 @@ if (BatSpaceline_Enabled)
 BatSpLi018 = ""; BatSpLi019 = ""; BatSpLi020 = ""; BatSpLi021 = ""; BatSpLi022 = ""; BatSpLi023 = ""; BatSpLi024 = "";
 BatSpLi025 = ""; BatSpLi026 = ""; BatSpLi027 = ""; BatSpLi028 = ""; BatSpLi029 = ""; BatSpLi030 = "";
 }
-
 //Space		########################################
 string li017 = PxFull;
 //lis Battery Amount + MW		####################
@@ -1400,7 +1304,6 @@ string str_Boundli_151_To_160 = li151 + Breakli + li152 + Breakli + li153 + Brea
 string str_Boundli_161_To_170 = li161 + Breakli + li162 + Breakli + li163 + Breakli + li164 + Breakli + li165 + Breakli + li166 + Breakli + li167 + Breakli + li168 + Breakli + li169 + Breakli + li170 + Breakli;
 string str_Boundli_171_To_178 = li171 + Breakli + li172 + Breakli + li173 + Breakli + li174 + Breakli + li175 + Breakli + li176 + Breakli + li177 + Breakli + li178;
 string str_AllBoundlis_001_To_178 = str_Boundli_001_To_010 + str_Boundli_011_To_020 + str_Boundli_021_To_030 + str_Boundli_031_To_040 + str_Boundli_041_To_050 + str_Boundli_051_To_060 + str_Boundli_061_To_070 + str_Boundli_071_To_080 + str_Boundli_081_To_090 + str_Boundli_091_To_100 + str_Boundli_101_To_110 + str_Boundli_111_To_120 + str_Boundli_121_To_130 + str_Boundli_131_To_140 + str_Boundli_141_To_150 + str_Boundli_151_To_160 + str_Boundli_161_To_170 + str_Boundli_171_To_178;
-
 // find all LCD with NameTag
 var LCDPanels = new List<IMyTextPanel>();
 GridTerminalSystem.GetBlocksOfType<IMyTextPanel>(LCDPanels, block => {
@@ -1413,15 +1316,14 @@ return true;
 return false;
 });
 Echo("Displays: " + LCDPanels.Count);
-
 // this loop send Message to show to all found Lcds
 foreach(var LCDPanel in LCDPanels)
 {
 LCDPanel.SetValue("FontColor", new Color(LCDBrightness, LCDBrightness, LCDBrightness)); // White
 LCDPanel.SetValue("FontSize", 0.10f);    // set Font size of your LCD
 LCDPanel.SetValue("Font", (long)1147350002);
-LCDPanel.ShowPublicTextOnScreen();
-LCDPanel.WritePublicText("" + str_AllBoundlis_001_To_178, false);
+LCDPanel.ContentType = VRage.Game.GUI.TextPanel.ContentType.TEXT_AND_IMAGE;
+LCDPanel.WriteText("" + str_AllBoundlis_001_To_178, false);
 }
 }
 } // End of Main script
