@@ -117,8 +117,8 @@ namespace IngameScript
             parser.SetComment("lcd", "NameTag", "Sets the name used in the LCD panels to be found.");
             parser.Set("lcd", "OnlyLocalGrid", true);
             parser.SetComment("lcd", "OnlyLocalGrid", "Search only within your own grid.");
-            parser.Set("lcd", "Widscreen", false);
-            parser.SetComment("lcd", "Widscreen", "The LCD panel is a wide screen.");
+            parser.Set("lcd", "Widescreen", false);
+            parser.SetComment("lcd", "Widescreen", "The LCD panel is a wide screen.");
             parser.Set("lcd", "Brightness", 255);
             parser.SetComment("lcd", "Brightness", "Sets the brightness of the screen.");
 
@@ -251,7 +251,6 @@ namespace IngameScript
                 Echo("\nBattery Status script:\nby Lightwolf\nModified by DMOrigin\n\nSelf Updating every " + SelfUpSys_perSecond + " Seconds\n");
 
                 PowerMetricUnit BatteryStoredUnit = PowerMetricUnit.kWh;
-                //bool OnlyNameTag = false;
 
                 //Pixel Tempelates
                 string P1 = "";
