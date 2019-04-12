@@ -1441,6 +1441,8 @@ namespace IngameScript
                     LCDPanel.SetValue("FontColor", new Color(LCDBrightness, LCDBrightness, LCDBrightness)); // White
                     LCDPanel.SetValue("FontSize", 0.10f);    // set Font size of your LCD
                     LCDPanel.SetValue("Font", (long)1147350002);
+                    LCDPanel.TextPadding = 0f;
+                    LCDPanel.Alignment = VRage.Game.GUI.TextPanel.TextAlignment.LEFT;
                     LCDPanel.ContentType = VRage.Game.GUI.TextPanel.ContentType.TEXT_AND_IMAGE;
                     LCDPanel.WriteText("" + str_AllBoundlis_001_To_178, false);
                 }
