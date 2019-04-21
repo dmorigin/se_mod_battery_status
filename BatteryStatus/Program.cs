@@ -184,7 +184,7 @@ namespace IngameScript
 
         private bool BatteryFilterCallback(IMyTerminalBlock block)
         {
-            if (BatteryOnlyLocalGrid && block.IsSameConstructAs(Me))
+            if (BatteryOnlyLocalGrid && !block.IsSameConstructAs(Me))
                 return false;
 
             if (BatteryWithNameTag && !block.CustomName.Contains(BatteryNameTag))
