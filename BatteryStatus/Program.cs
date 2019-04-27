@@ -27,6 +27,7 @@ namespace IngameScript
         #
         #   Modified by: DMOrigin
         #   URL: https://www.gamers-shell.de/
+        #   Version: v1.2.2
 
         ################################################################################
         # 	Description:
@@ -67,6 +68,9 @@ namespace IngameScript
 
         int SelfUpSysCounttimes = 5;
         int SelfUpSysCounter = 0;
+
+        // change the way how this script checks the diffrent grids
+        const bool useIsSameConstruct_ = true;
 
         enum PowerMetricUnit
         {
@@ -184,8 +188,16 @@ namespace IngameScript
 
         private bool BatteryFilterCallback(IMyTerminalBlock block)
         {
-            if (BatteryOnlyLocalGrid && !block.IsSameConstructAs(Me))
-                return false;
+            if (useIsSameConstruct_)
+            {
+                if (BatteryOnlyLocalGrid && !block.IsSameConstructAs(Me))
+                    return false;
+            }
+            else
+            {
+                if (BatteryOnlyLocalGrid && Me.CubeGrid != block.CubeGrid)
+                    return false;
+            }
 
             if (BatteryWithNameTag && !block.CustomName.Contains(BatteryNameTag))
                 return false;

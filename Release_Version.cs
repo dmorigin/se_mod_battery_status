@@ -6,6 +6,7 @@
 #
 #   Modified by: DMOrigin
 #   URL: https://www.gamers-shell.de/
+#   Version: v1.2.2
 ################################################################################
 # 	Description:
 This script shows Battery level state on standart LCDs or wide LCDs, as digital Symbols
@@ -74,8 +75,8 @@ parser.Set("lcd", "NameTag", "[Battery Status LCD]");
 parser.SetComment("lcd", "NameTag", "Sets the name used in the LCD panels to be found.");
 parser.Set("lcd", "OnlyLocalGrid", true);
 parser.SetComment("lcd", "OnlyLocalGrid", "Search only within your own grid.");
-parser.Set("lcd", "Widscreen", false);
-parser.SetComment("lcd", "Widscreen", "The LCD panel is a wide screen.");
+parser.Set("lcd", "Widescreen", false);
+parser.SetComment("lcd", "Widescreen", "The LCD panel is a wide screen.");
 parser.Set("lcd", "Brightness", 255);
 parser.SetComment("lcd", "Brightness", "Sets the brightness of the screen.");
 parser.Set("system", "UpdatingEnabled", true);
@@ -132,8 +133,16 @@ BatteryAllStoredEnergyEnabled = GetConfigBool(parser, "display", "ShowTotalStore
 }
 private bool BatteryFilterCallback(IMyTerminalBlock block)
 {
-if (BatteryOnlyLocalGrid && block.CubeGrid != Me.CubeGrid)
+if (useIsSameConstruct_)
+{
+if (BatteryOnlyLocalGrid && !block.IsSameConstructAs(Me))
 return false;
+}
+else
+{
+if (BatteryOnlyLocalGrid && Me.CubeGrid != block.CubeGrid)
+return false;
+}
 if (BatteryWithNameTag && !block.CustomName.Contains(BatteryNameTag))
 return false;
 return true;
@@ -189,7 +198,6 @@ if (Run_ThisScript)
 {
 Echo("\nBattery Status script:\nby Lightwolf\nModified by DMOrigin\n\nSelf Updating every " + SelfUpSys_perSecond + " Seconds\n");
 PowerMetricUnit BatteryStoredUnit = PowerMetricUnit.kWh;
-//bool OnlyNameTag = false;
 //Pixel Tempelates
 string P1 = "";
 string P2 = "";
